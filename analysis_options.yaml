@@ -50,3 +50,5 @@ linter:
 
     #   DO follow the directive ordering conventions in Effective Dart:
     directives_ordering: true
+
+    avoid_catches_without_on_clauses: false

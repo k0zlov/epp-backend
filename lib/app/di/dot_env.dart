@@ -25,6 +25,8 @@ enum DotEnvKey {
   databaseUsername('DATABASE_USERNAME'),
   accessTokenKey('ACCESS_TOKEN_SECRET'),
   refreshTokenKey('REFRESH_TOKEN_SECRET'),
+  resendApikey('RESEND_API_KEY'),
+  domainTitle('DOMAIN_TITLE'),
   smtpHost('SMTP_HOST'),
   smtpPort('SMTP_PORT')
   ;

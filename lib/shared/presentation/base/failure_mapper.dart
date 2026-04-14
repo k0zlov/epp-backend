@@ -36,12 +36,3 @@ abstract class FailureMapper<T extends DomainFailure> {
     );
   }
 }
-
-class AuthFailureMapper extends FailureMapper<AuthFailure> {
-  @override
-  FailurePresentation map(AuthFailure failure) {
-    return switch (failure) {
-      SessionExpired() => (400, 'Some message'),
-    };
-  }
-}

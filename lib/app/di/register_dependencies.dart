@@ -6,6 +6,7 @@ import 'package:epp_backend/shared/infrastructure/infrastructure.dart';
 import 'package:epp_backend/shared/presentation/presentation.dart';
 
 import 'package:get_it/get_it.dart';
+import 'package:mailer/smtp_server.dart';
 import 'package:postgres/postgres.dart';
 
 final GetIt getIt = GetIt.instance;
@@ -36,16 +37,26 @@ Future<void> _database() async {
 
 Future<void> _services() async {
   getIt
+    ..registerLazySingleton<LoggerService>(ConsoleLoggerService.new)
     ..registerLazySingleton<TokenService>(
       () => JwtTokenService(refreshKey: env(DotEnvKey.refreshTokenKey), accessKey: env(DotEnvKey.accessTokenKey)),
     )
     ..registerLazySingleton<UnitOfWork>(() => DriftUnitOfWork(db: getIt()))
     ..registerLazySingleton<EventBus>(InMemoryEventBus.new)
-    ..registerLazySingleton<EventProjector>(() => RegistryEventProjector([]));
+    ..registerLazySingleton<EventProjector>(() => RegistryEventProjector([]))
+    ..registerLazySingleton<MailService>(
+      () => SmtpMailService(
+        templatesPath: 'assets/mail_templates',
+        domainTitle: env(DotEnvKey.domainTitle),
+        server: SmtpServer(env(DotEnvKey.smtpHost), port: int.parse(env(DotEnvKey.smtpPort)), allowInsecure: true),
+      ),
+    );
 }
 
 Future<void> _middlewares() async {
-  getIt.registerLazySingleton<AuthMiddleware>(() => AuthMiddleware(tokenService: getIt()));
+  getIt
+    ..registerLazySingleton<AuthMiddleware>(() => AuthMiddleware(tokenService: getIt()))
+    ..registerLazySingleton<ErrorMiddleware>(() => ErrorMiddleware(loggerService: getIt()));
 }
 
 Future<void> _wsManager() async {

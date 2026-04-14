@@ -1,4 +1,3 @@
-/// Shared Kernel (base classes)
 sealed class BaseDomainFailure {
   const BaseDomainFailure();
 }
@@ -40,33 +39,4 @@ abstract class DomainFailure extends BaseDomainFailure {
   final DateTime occurredAt;
 
   String get title => runtimeType.toString();
-}
-
-/// Domain layer (Context)
-sealed class AuthFailure extends DomainFailure {}
-
-class SessionFailureContext extends DomainFailureContext {
-  SessionFailureContext({required this.sessionId, required super.failure});
-
-  final String sessionId;
-
-  @override
-  Map<String, dynamic> getContextDetails() => {'sessionId': sessionId};
-}
-
-class UserFailureContext extends DomainFailureContext {
-  UserFailureContext({required this.userId, required super.failure});
-
-  final String userId;
-
-  @override
-  Map<String, dynamic> getContextDetails() => {'userId': userId};
-}
-
-/// if there are any params in domain failure
-class SessionExpired extends AuthFailure with DomainFailureDetails {
-  @override
-  Map<String, dynamic> getDetails() {
-    return {'test': 123};
-  }
 }

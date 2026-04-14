@@ -23,7 +23,10 @@ enum WsClientAction { subscribe, unsubscribe }
 
 @freezed
 abstract class WsClientMessage with _$WsClientMessage {
-  const factory WsClientMessage({required WsClientAction action, required WsTopic topic}) = _WsClientMessage;
+  const factory WsClientMessage({
+    required WsClientAction action,
+    required WsTopic topic,
+  }) = _WsClientMessage;
 
   factory WsClientMessage.fromJson(Map<String, dynamic> json) => _$WsClientMessageFromJson(json);
 }

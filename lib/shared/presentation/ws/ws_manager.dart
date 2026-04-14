@@ -127,7 +127,21 @@ class WsManager {
 
     final topic = clientMessage.topic;
     final controller = _controllers[topic.title];
-    if (controller == null) return;
+    if (controller == null) {
+      channel.sink.add(
+        jsonEncode(
+          WsServerMessage.error(
+            topic: topic,
+            error: const PresentationError(
+              statusCode: 402,
+              code: 'InvalidTopic',
+              message: 'There is no such topic',
+            ),
+          ).toJson(),
+        ),
+      );
+      return;
+    }
 
     switch (clientMessage.action) {
       case WsClientAction.subscribe:
