@@ -19,4 +19,9 @@ class InMemoryEventBus implements EventBus {
     final Type type = eventType ?? T;
     _handlersMap[type] = (_handlersMap[type] ?? [])..add(handler);
   }
+
+  @override
+  void publishAll(List<Event> events) {
+    events.forEach(publish);
+  }
 }

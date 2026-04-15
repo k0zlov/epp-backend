@@ -1,6 +1,7 @@
 import 'package:drift_postgres/drift_postgres.dart';
 import 'package:epp_backend/app/database/database.dart';
 import 'package:epp_backend/app/di/dot_env.dart';
+import 'package:epp_backend/contexts/auth/auth.dart';
 import 'package:epp_backend/shared/application/application.dart';
 import 'package:epp_backend/shared/infrastructure/infrastructure.dart';
 import 'package:epp_backend/shared/presentation/presentation.dart';
@@ -14,6 +15,8 @@ final GetIt getIt = GetIt.instance;
 Future<void> registerDependencies() async {
   await _database();
   await _services();
+  await _projector();
+  await _repositories();
   await _middlewares();
   await _wsManager();
   await _routes();
@@ -41,9 +44,9 @@ Future<void> _services() async {
     ..registerLazySingleton<TokenService>(
       () => JwtTokenService(refreshKey: env(DotEnvKey.refreshTokenKey), accessKey: env(DotEnvKey.accessTokenKey)),
     )
+    ..registerLazySingleton<HashService>(BcryptHashService.new)
     ..registerLazySingleton<UnitOfWork>(() => DriftUnitOfWork(db: getIt()))
     ..registerLazySingleton<EventBus>(InMemoryEventBus.new)
-    ..registerLazySingleton<EventProjector>(() => RegistryEventProjector([]))
     ..registerLazySingleton<MailService>(
       () => SmtpMailService(
         templatesPath: 'assets/mail_templates',
@@ -51,6 +54,14 @@ Future<void> _services() async {
         server: SmtpServer(env(DotEnvKey.smtpHost), port: int.parse(env(DotEnvKey.smtpPort)), allowInsecure: true),
       ),
     );
+}
+
+Future<void> _projector() async {
+  getIt.registerLazySingleton<EventProjector>(() => RegistryEventProjector([]));
+}
+
+Future<void> _repositories() async {
+  getIt.registerLazySingleton<UserRepository>(() => DriftUserRepository(db: getIt()));
 }
 
 Future<void> _middlewares() async {

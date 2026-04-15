@@ -1,18 +1,22 @@
 // ignore_for_file: avoid_equals_and_hash_code_on_mutable_classes
 
+import 'package:uuid/v4.dart';
+
 abstract class Entity {
   Entity({
-    required this.id,
-    this.updatedAt,
-    DateTime? createdAt,
-  }) : createdAt = createdAt ?? DateTime.now();
+    required String? id,
+    required DateTime? updatedAt,
+    required DateTime? createdAt,
+  }) : createdAt = createdAt ?? DateTime.timestamp(),
+       updatedAt = updatedAt ?? DateTime.timestamp(),
+       id = id ?? const UuidV4().generate();
 
   final String id;
-  DateTime? updatedAt;
+  DateTime updatedAt;
   final DateTime createdAt;
 
   void updateTimestamp() {
-    updatedAt = DateTime.now();
+    updatedAt = DateTime.timestamp();
   }
 
   @override

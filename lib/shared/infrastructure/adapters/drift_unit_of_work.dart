@@ -1,5 +1,5 @@
 import 'package:epp_backend/app/database/database.dart';
-import 'package:epp_backend/shared/application/ports/unit_of_work.dart';
+import 'package:epp_backend/shared/application/application.dart';
 
 class DriftUnitOfWork implements UnitOfWork {
   const DriftUnitOfWork({required this.db});
@@ -7,7 +7,16 @@ class DriftUnitOfWork implements UnitOfWork {
   final Database db;
 
   @override
-  Future<T> execute<T>(Future<T> Function() action) {
-    return db.transaction<T>(action);
+  Future<T> execute<T>(
+    Future<T> Function() action, {
+    String errorMessage = 'Transaction failed during unit of work execution',
+  }) {
+    try {
+      return db.transaction<T>(action);
+    } on Exception catch (e, st) {
+      if (e is InfrastructureException) rethrow;
+
+      throw InfrastructureException(message: errorMessage, error: e, stackTrace: st);
+    }
   }
 }

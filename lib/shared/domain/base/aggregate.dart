@@ -4,8 +4,8 @@ import 'package:epp_backend/shared/domain/base/event.dart';
 abstract class Aggregate extends Entity {
   Aggregate({
     required super.id,
-    super.updatedAt,
-    super.createdAt,
+    required super.updatedAt,
+    required super.createdAt,
   });
 
   final List<DomainEvent> _events = [];
