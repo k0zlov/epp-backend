@@ -1,7 +1,7 @@
 import 'package:epp_backend/app/database/database.dart';
 import 'package:epp_backend/contexts/auth/application/ports/user_repository.dart';
 import 'package:epp_backend/contexts/auth/domain/aggregates/user.dart';
-import 'package:epp_backend/contexts/auth/infrastructure/mappers/user_row_x.dart';
+import 'package:epp_backend/contexts/auth/infrastructure/mappers/user_row_mapper.dart';
 import 'package:epp_backend/shared/infrastructure/extensions/table_extension.dart';
 
 class DriftUserRepository implements UserRepository {

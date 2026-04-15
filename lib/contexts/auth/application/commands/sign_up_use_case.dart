@@ -2,6 +2,7 @@ import 'package:epp_backend/contexts/auth/application/application.dart';
 import 'package:epp_backend/contexts/auth/domain/domain.dart';
 import 'package:epp_backend/shared/application/application.dart';
 import 'package:epp_backend/shared/domain/base/result.dart';
+import 'package:epp_backend/shared/infrastructure/extensions/string_x.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'sign_up_use_case.g.dart';
@@ -35,23 +36,26 @@ class SignUpUseCase extends UseCase<void, SignUpParams> {
 
   @override
   Future<Result<void>> call(SignUpParams params) {
-    return unitOfWork.execute(errorMessage: 'Failed to complete sign up process for email: ${params.email}', () async {
-      final User? existingUser = await repository.getUserByEmail(params.email);
+    return unitOfWork.execute(
+      errorMessage: 'Failed to complete sign up process for email: ${params.email.maskEmail()}',
+      () async {
+        final User? existingUser = await repository.getUserByEmail(params.email);
 
-      if (existingUser != null) {
-        return Failure(EmailAlreadyInUse(params.email));
-      }
+        if (existingUser != null) {
+          return Failure(EmailAlreadyInUse(params.email));
+        }
 
-      final passwordHash = await hashService.hash(params.password);
+        final passwordHash = await hashService.hash(params.password);
 
-      return User.create(email: params.email, passwordHash: passwordHash).fold(
-        Failure.new,
-        (user) async {
-          await projector.projectAll(user.events);
-          eventBus.publishAll(user.events);
-          return const Success(null);
-        },
-      );
-    });
+        return User.create(email: params.email, passwordHash: passwordHash).fold(
+          Failure.new,
+          (user) async {
+            await projector.projectAll(user.events);
+            eventBus.publishAll(user.events);
+            return const Success(null);
+          },
+        );
+      },
+    );
   }
 }

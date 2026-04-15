@@ -1,5 +1,6 @@
 import 'package:epp_backend/contexts/auth/domain/entities/auth_session.dart';
 import 'package:epp_backend/contexts/auth/domain/entities/auth_token.dart';
+import 'package:epp_backend/contexts/auth/domain/events/user_events.dart';
 import 'package:epp_backend/shared/domain/base/aggregate.dart';
 import 'package:epp_backend/shared/domain/base/result.dart';
 
@@ -27,8 +28,7 @@ class User extends Aggregate {
       createdAt: null,
     );
 
-    // add event
-
+    user.addEvent(UserSignedUpEvent(user: user));
     return Success(user);
   }
 

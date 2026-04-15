@@ -1,9 +1,9 @@
 import 'package:epp_backend/app/database/database.dart';
 import 'package:epp_backend/contexts/auth/domain/aggregates/user.dart';
-import 'package:epp_backend/contexts/auth/infrastructure/mappers/auth_session_row_x.dart';
-import 'package:epp_backend/contexts/auth/infrastructure/mappers/auth_token_row_x.dart';
+import 'package:epp_backend/contexts/auth/infrastructure/mappers/auth_session_row_mapper.dart';
+import 'package:epp_backend/contexts/auth/infrastructure/mappers/auth_token_row_mapper.dart';
 
-extension UserRowX on UserRow {
+extension UserRowMapper on UserRow {
   User toDomain({
     required List<AuthSessionRow> sessionRows,
     required List<AuthTokenRow> tokenRows,
@@ -18,6 +18,18 @@ extension UserRowX on UserRow {
       deletedAt: deletedAt,
       sessions: sessionRows.map((s) => s.toDomain()).toList(),
       tokens: tokenRows.map((t) => t.toDomain()).toList(),
+    );
+  }
+
+  static UserRow fromDomain(User user) {
+    return UserRow(
+      id: user.id,
+      email: user.email,
+      passwordHash: user.passwordHash,
+      isVerified: user.isVerified,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+      deletedAt: user.deletedAt,
     );
   }
 }
