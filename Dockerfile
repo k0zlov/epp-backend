@@ -15,7 +15,7 @@ FROM scratch
 
 COPY --from=build /runtime/ /
 COPY --from=build /app/server /app/server
-COPY --from=build /app/assets /app/assets
+COPY --from=build /app/assets /assets
 
 EXPOSE 8080
 
