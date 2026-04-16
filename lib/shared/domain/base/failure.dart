@@ -1,15 +1,15 @@
-sealed class BaseDomainFailure {
-  const BaseDomainFailure();
+sealed class DomainFailureBase {
+  const DomainFailureBase();
 }
 
 mixin DomainFailureDetails {
   Map<String, dynamic> getDetails();
 }
 
-abstract class DomainFailureContext extends BaseDomainFailure with DomainFailureDetails {
+abstract class DomainFailureContext extends DomainFailureBase with DomainFailureDetails {
   const DomainFailureContext({required this.failure});
 
-  final BaseDomainFailure failure;
+  final DomainFailureBase failure;
 
   Map<String, dynamic> getContextDetails();
 
@@ -33,10 +33,14 @@ abstract class DomainFailureContext extends BaseDomainFailure with DomainFailure
   }
 }
 
-abstract class DomainFailure extends BaseDomainFailure {
+abstract class DomainFailure extends DomainFailureBase {
   DomainFailure() : occurredAt = DateTime.now();
 
   final DateTime occurredAt;
+}
 
-  String get title => runtimeType.toString();
+abstract class DomainFailureList extends DomainFailureBase {
+  const DomainFailureList({required this.failures});
+
+  final List<DomainFailureBase> failures;
 }

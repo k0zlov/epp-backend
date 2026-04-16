@@ -6,7 +6,7 @@ class RegistryEventProjector implements EventProjector {
   RegistryEventProjector(this._handlers);
 
   /// The registry of all available projection handlers in your app
-  final List<ProjectionHandler> _handlers;
+  final List<ProjectionHandler<DomainEvent>> _handlers;
 
   @override
   Future<void> projectAll(List<DomainEvent> events) async {

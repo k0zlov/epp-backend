@@ -14,8 +14,8 @@ Future<HttpServer> run(
   await registerDependencies();
 
   final Handler handler = (await handlerCallback())
-      .use(LogRequestsMiddleware(logger: (message, isError) {}))
       .use(getIt<ErrorMiddleware>())
+      .use(LogRequestsMiddleware(logger: (message, isError) {}))
       .use(getIt<AuthMiddleware>());
 
   return serve(handler, address, port);

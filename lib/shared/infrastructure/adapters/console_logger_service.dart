@@ -5,7 +5,11 @@ class ConsoleLoggerService implements LoggerService {
   ConsoleLoggerService({bool silent = false})
     : _logger = Logger(
         level: silent ? Level.off : Level.all,
-        printer: PrettyPrinter(dateTimeFormat: DateTimeFormat.dateAndTime),
+        filter: ProductionFilter(),
+        printer: PrettyPrinter(
+          errorMethodCount: 30,
+          dateTimeFormat: DateTimeFormat.dateAndTime,
+        ),
       );
 
   final Logger _logger;

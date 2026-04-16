@@ -10,3 +10,14 @@ class EmailAlreadyInUse extends AuthFailure with DomainFailureDetails {
   @override
   Map<String, dynamic> getDetails() => {'email': email};
 }
+
+class InvalidEmail extends AuthFailure with DomainFailureDetails {
+  InvalidEmail(this.email);
+
+  final String email;
+
+  @override
+  Map<String, dynamic> getDetails() => {'email': email};
+}
+
+class InvalidPassword extends AuthFailure {}

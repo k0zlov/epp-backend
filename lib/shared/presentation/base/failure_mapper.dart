@@ -6,7 +6,18 @@ typedef FailurePresentation = (int statusCode, String message);
 abstract class FailureMapper<T extends DomainFailure> {
   FailurePresentation map(T failure);
 
-  PresentationError resolve(BaseDomainFailure failure) {
+  PresentationError resolve(DomainFailureBase failure) {
+    if (failure is DomainFailureList) {
+      final List<PresentationError> errors = failure.failures.map(resolve).toList();
+
+      return PresentationError(
+        statusCode: 400,
+        code: failure.runtimeType.toString(),
+        message: 'Failed with multiple errors',
+        details: {'errors': errors.map((e) => e.toJson()).toList()},
+      );
+    }
+
     final Map<String, dynamic> details = {};
 
     if (failure is DomainFailureDetails) {
@@ -30,7 +41,7 @@ abstract class FailureMapper<T extends DomainFailure> {
 
     return PresentationError(
       statusCode: statusCode,
-      code: rootFailure.title,
+      code: rootFailure.runtimeType.toString(),
       message: message,
       details: details,
     );

@@ -1,7 +1,9 @@
 import 'package:epp_backend/contexts/auth/application/application.dart';
 import 'package:epp_backend/contexts/auth/domain/domain.dart';
+import 'package:epp_backend/contexts/auth/domain/value_objects/password.dart';
 import 'package:epp_backend/shared/application/application.dart';
-import 'package:epp_backend/shared/domain/base/result.dart';
+import 'package:epp_backend/shared/domain/domain.dart';
+import 'package:epp_backend/shared/infrastructure/extensions/either_x.dart';
 import 'package:epp_backend/shared/infrastructure/extensions/string_x.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
@@ -39,15 +41,24 @@ class SignUpUseCase extends UseCase<void, SignUpParams> {
     return unitOfWork.execute(
       errorMessage: 'Failed to complete sign up process for email: ${params.email.maskEmail()}',
       () async {
-        final User? existingUser = await repository.getUserByEmail(params.email);
+        final List<DomainFailureBase> failures = [];
 
-        if (existingUser != null) {
-          return Failure(EmailAlreadyInUse(params.email));
+        final email = Email.create(params.email).getOrElseNull(failures.add);
+        final password = Password.create(params.password).getOrElseNull(failures.add);
+
+        if (failures.isNotEmpty) {
+          return Failure(ValidationFailures(failures: failures));
         }
 
-        final passwordHash = await hashService.hash(params.password);
+        final User? existingUser = await repository.getUserByEmail(email!.value);
 
-        return User.create(email: params.email, passwordHash: passwordHash).fold(
+        if (existingUser != null) {
+          return Failure(EmailAlreadyInUse(email.value));
+        }
+
+        final passwordHash = await hashService.hash(password!.value);
+
+        return User.create(email: email, passwordHash: passwordHash).fold(
           Failure.new,
           (user) async {
             await projector.projectAll(user.events);
