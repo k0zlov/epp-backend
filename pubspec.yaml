@@ -40,3 +40,4 @@ dev_dependencies:
   drift_dev: ^2.26.0
   ruta_generator: 0.1.11
   intl_utils: ^2.8.11
+  ruta_cli: ^0.1.8
