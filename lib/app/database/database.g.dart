@@ -17,16 +17,16 @@ class $UsersTable extends Users with TableInfo<$UsersTable, UserRow> {
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
-  static const VerificationMeta _emailMeta = const VerificationMeta('email');
   @override
-  late final GeneratedColumn<String> email = GeneratedColumn<String>(
-    'email',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-    defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'),
-  );
+  late final GeneratedColumnWithTypeConverter<Email, String> email =
+      GeneratedColumn<String>(
+        'email',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: true,
+        defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'),
+      ).withConverter<Email>($UsersTable.$converteremail);
   static const VerificationMeta _passwordHashMeta = const VerificationMeta(
     'passwordHash',
   );
@@ -113,14 +113,6 @@ class $UsersTable extends Users with TableInfo<$UsersTable, UserRow> {
     } else if (isInserting) {
       context.missing(_idMeta);
     }
-    if (data.containsKey('email')) {
-      context.handle(
-        _emailMeta,
-        email.isAcceptableOrUnknown(data['email']!, _emailMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_emailMeta);
-    }
     if (data.containsKey('password_hash')) {
       context.handle(
         _passwordHashMeta,
@@ -175,10 +167,12 @@ class $UsersTable extends Users with TableInfo<$UsersTable, UserRow> {
         DriftSqlType.string,
         data['${effectivePrefix}id'],
       )!,
-      email: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}email'],
-      )!,
+      email: $UsersTable.$converteremail.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}email'],
+        )!,
+      ),
       passwordHash: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}password_hash'],
@@ -206,11 +200,17 @@ class $UsersTable extends Users with TableInfo<$UsersTable, UserRow> {
   $UsersTable createAlias(String alias) {
     return $UsersTable(attachedDatabase, alias);
   }
+
+  static TypeConverter<Email, String> $converteremail =
+      VoConverter<Email, String>(
+        fromValue: Email.new,
+        toValue: (vo) => vo.value,
+      );
 }
 
 class UserRow extends DataClass implements Insertable<UserRow> {
   final String id;
-  final String email;
+  final Email email;
   final String passwordHash;
   final bool isVerified;
   final DateTime? deletedAt;
@@ -229,7 +229,9 @@ class UserRow extends DataClass implements Insertable<UserRow> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<String>(id);
-    map['email'] = Variable<String>(email);
+    {
+      map['email'] = Variable<String>($UsersTable.$converteremail.toSql(email));
+    }
     map['password_hash'] = Variable<String>(passwordHash);
     map['is_verified'] = Variable<bool>(isVerified);
     if (!nullToAbsent || deletedAt != null) {
@@ -261,7 +263,7 @@ class UserRow extends DataClass implements Insertable<UserRow> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return UserRow(
       id: serializer.fromJson<String>(json['id']),
-      email: serializer.fromJson<String>(json['email']),
+      email: serializer.fromJson<Email>(json['email']),
       passwordHash: serializer.fromJson<String>(json['passwordHash']),
       isVerified: serializer.fromJson<bool>(json['isVerified']),
       deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
@@ -274,7 +276,7 @@ class UserRow extends DataClass implements Insertable<UserRow> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<String>(id),
-      'email': serializer.toJson<String>(email),
+      'email': serializer.toJson<Email>(email),
       'passwordHash': serializer.toJson<String>(passwordHash),
       'isVerified': serializer.toJson<bool>(isVerified),
       'deletedAt': serializer.toJson<DateTime?>(deletedAt),
@@ -285,7 +287,7 @@ class UserRow extends DataClass implements Insertable<UserRow> {
 
   UserRow copyWith({
     String? id,
-    String? email,
+    Email? email,
     String? passwordHash,
     bool? isVerified,
     Value<DateTime?> deletedAt = const Value.absent(),
@@ -355,7 +357,7 @@ class UserRow extends DataClass implements Insertable<UserRow> {
 
 class UsersCompanion extends UpdateCompanion<UserRow> {
   final Value<String> id;
-  final Value<String> email;
+  final Value<Email> email;
   final Value<String> passwordHash;
   final Value<bool> isVerified;
   final Value<DateTime?> deletedAt;
@@ -374,7 +376,7 @@ class UsersCompanion extends UpdateCompanion<UserRow> {
   });
   UsersCompanion.insert({
     required String id,
-    required String email,
+    required Email email,
     required String passwordHash,
     required bool isVerified,
     this.deletedAt = const Value.absent(),
@@ -411,7 +413,7 @@ class UsersCompanion extends UpdateCompanion<UserRow> {
 
   UsersCompanion copyWith({
     Value<String>? id,
-    Value<String>? email,
+    Value<Email>? email,
     Value<String>? passwordHash,
     Value<bool>? isVerified,
     Value<DateTime?>? deletedAt,
@@ -438,7 +440,9 @@ class UsersCompanion extends UpdateCompanion<UserRow> {
       map['id'] = Variable<String>(id.value);
     }
     if (email.present) {
-      map['email'] = Variable<String>(email.value);
+      map['email'] = Variable<String>(
+        $UsersTable.$converteremail.toSql(email.value),
+      );
     }
     if (passwordHash.present) {
       map['password_hash'] = Variable<String>(passwordHash.value);
@@ -1524,7 +1528,7 @@ abstract class _$Database extends GeneratedDatabase {
 typedef $$UsersTableCreateCompanionBuilder =
     UsersCompanion Function({
       required String id,
-      required String email,
+      required Email email,
       required String passwordHash,
       required bool isVerified,
       Value<DateTime?> deletedAt,
@@ -1535,7 +1539,7 @@ typedef $$UsersTableCreateCompanionBuilder =
 typedef $$UsersTableUpdateCompanionBuilder =
     UsersCompanion Function({
       Value<String> id,
-      Value<String> email,
+      Value<Email> email,
       Value<String> passwordHash,
       Value<bool> isVerified,
       Value<DateTime?> deletedAt,
@@ -1598,10 +1602,11 @@ class $$UsersTableFilterComposer extends Composer<_$Database, $UsersTable> {
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<String> get email => $composableBuilder(
-    column: $table.email,
-    builder: (column) => ColumnFilters(column),
-  );
+  ColumnWithTypeConverterFilters<Email, Email, String> get email =>
+      $composableBuilder(
+        column: $table.email,
+        builder: (column) => ColumnWithTypeConverterFilters(column),
+      );
 
   ColumnFilters<String> get passwordHash => $composableBuilder(
     column: $table.passwordHash,
@@ -1734,7 +1739,7 @@ class $$UsersTableAnnotationComposer extends Composer<_$Database, $UsersTable> {
   GeneratedColumn<String> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
 
-  GeneratedColumn<String> get email =>
+  GeneratedColumnWithTypeConverter<Email, String> get email =>
       $composableBuilder(column: $table.email, builder: (column) => column);
 
   GeneratedColumn<String> get passwordHash => $composableBuilder(
@@ -1836,7 +1841,7 @@ class $$UsersTableTableManager
           updateCompanionCallback:
               ({
                 Value<String> id = const Value.absent(),
-                Value<String> email = const Value.absent(),
+                Value<Email> email = const Value.absent(),
                 Value<String> passwordHash = const Value.absent(),
                 Value<bool> isVerified = const Value.absent(),
                 Value<DateTime?> deletedAt = const Value.absent(),
@@ -1856,7 +1861,7 @@ class $$UsersTableTableManager
           createCompanionCallback:
               ({
                 required String id,
-                required String email,
+                required Email email,
                 required String passwordHash,
                 required bool isVerified,
                 Value<DateTime?> deletedAt = const Value.absent(),

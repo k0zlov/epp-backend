@@ -1,0 +1,49 @@
+name: Deploy EPP Server
+
+on:
+  push:
+    branches: [ prod ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Dart
+        uses: dart-lang/setup-dart@v1
+
+      - name: Install dependencies
+        run: dart pub get
+
+      - name: Run tests
+        run: dart test
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            mkdir -p /app/epp-backend
+            cd /app/epp-backend
+            
+            if [ ! -d ".git" ]; then
+              git clone -b prod https://github.com/${{ github.repository }}.git .
+            else
+              git pull origin prod
+            fi
+            
+            echo "${{ secrets.ENV_FILE }}" > .env
+            
+            docker compose up -d --build
+            docker image prune -f

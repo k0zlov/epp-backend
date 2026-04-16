@@ -2,7 +2,7 @@ import 'package:dartz/dartz.dart';
 import 'package:epp_backend/shared/domain/base/failure.dart';
 export 'package:dartz/dartz.dart' show Left, Right;
 
-typedef Result<T> = Either<BaseDomainFailure, T>;
+typedef Result<T> = Either<DomainFailureBase, T>;
 
 typedef Failure<L, R> = Left<L, R>;
 

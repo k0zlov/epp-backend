@@ -211,8 +211,8 @@ return $default(_that.statusCode,_that.code,_that.message,_that.details);case _:
 /// @nodoc
 @JsonSerializable()
 
-class _PresentationError implements PresentationError {
-  const _PresentationError({required this.statusCode, required this.code, required this.message, final  Map<String, dynamic>? details}): _details = details;
+class _PresentationError extends PresentationError {
+  const _PresentationError({required this.statusCode, required this.code, required this.message, final  Map<String, dynamic>? details}): _details = details,super._();
   factory _PresentationError.fromJson(Map<String, dynamic> json) => _$PresentationErrorFromJson(json);
 
 @override final  int statusCode;

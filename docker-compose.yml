@@ -1,0 +1,34 @@
+services:
+  epp-server:
+    build: .
+    restart: always
+    env_file:
+      - .env
+    networks:
+      - nginx_network
+      - epp_network
+    expose:
+      - "8080"
+
+  epp-db:
+    image: postgres:16-alpine
+    restart: always
+    environment:
+      - POSTGRES_USER=${DATABASE_USERNAME}
+      - POSTGRES_PASSWORD=${DATABASE_PASSWORD}
+      - POSTGRES_DB=${DATABASE_NAME}
+    ports:
+      - "5432:5432"
+    volumes:
+      - epp_db_data:/var/lib/postgresql/data
+    networks:
+      - epp_network
+      - nginx_network
+
+networks:
+  nginx_network:
+    external: true
+  epp_network:
+
+volumes:
+  epp_db_data:

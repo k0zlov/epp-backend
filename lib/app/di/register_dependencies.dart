@@ -1,7 +1,11 @@
 import 'package:drift_postgres/drift_postgres.dart';
 import 'package:epp_backend/app/database/database.dart';
 import 'package:epp_backend/app/di/dot_env.dart';
+import 'package:epp_backend/contexts/auth/application/commands/sign_up_use_case.dart';
 import 'package:epp_backend/contexts/auth/auth.dart';
+import 'package:epp_backend/contexts/auth/infrastructure/projectors/user_signed_up_projector.dart';
+import 'package:epp_backend/contexts/auth/presentation/errors/auth_failure_mapper.dart';
+import 'package:epp_backend/contexts/auth/presentation/rest/auth_controller.dart';
 import 'package:epp_backend/shared/application/application.dart';
 import 'package:epp_backend/shared/infrastructure/infrastructure.dart';
 import 'package:epp_backend/shared/presentation/presentation.dart';
@@ -9,6 +13,7 @@ import 'package:epp_backend/shared/presentation/presentation.dart';
 import 'package:get_it/get_it.dart';
 import 'package:mailer/smtp_server.dart';
 import 'package:postgres/postgres.dart';
+import 'package:ruta/open_api.dart';
 
 final GetIt getIt = GetIt.instance;
 
@@ -19,6 +24,9 @@ Future<void> registerDependencies() async {
   await _repositories();
   await _middlewares();
   await _wsManager();
+  await _useCases();
+  await _failureMappers();
+  await _controllers();
   await _routes();
 }
 
@@ -26,6 +34,7 @@ Future<void> _database() async {
   getIt.registerLazySingleton<Database>(
     () => Database(
       PgDatabase(
+        settings: const ConnectionSettings(sslMode: SslMode.disable),
         endpoint: Endpoint(
           host: env(DotEnvKey.databaseHost),
           port: int.parse(env(DotEnvKey.databasePort)),
@@ -57,7 +66,11 @@ Future<void> _services() async {
 }
 
 Future<void> _projector() async {
-  getIt.registerLazySingleton<EventProjector>(() => RegistryEventProjector([]));
+  getIt.registerLazySingleton<EventProjector>(
+    () => RegistryEventProjector([
+      UserSignedUpProjector(db: getIt()),
+    ]),
+  );
 }
 
 Future<void> _repositories() async {
@@ -74,6 +87,32 @@ Future<void> _wsManager() async {
   getIt.registerLazySingleton<WsManager>(WsManager.new);
 }
 
+Future<void> _useCases() async {
+  getIt.registerLazySingleton(
+    () => SignUpUseCase(
+      projector: getIt(),
+      repository: getIt(),
+      unitOfWork: getIt(),
+      hashService: getIt(),
+      eventBus: getIt(),
+    ),
+  );
+}
+
+Future<void> _failureMappers() async {
+  getIt.registerLazySingleton<AuthFailureMapper>(AuthFailureMapper.new);
+}
+
+Future<void> _controllers() async {
+  getIt.registerLazySingleton<AuthController>(() => AuthController(failureMapper: getIt(), signUpUseCase: getIt()));
+}
+
 Future<void> _routes() async {
-  getIt.registerLazySingleton<WsRoute>(() => WsRoute(wsManager: getIt()));
+  getIt
+    ..registerLazySingleton<OpenApiSpec>(
+      () => const OpenApiSpec(
+        info: OpenApiInfo(version: '1.0', title: 'EPP'),
+      ),
+    )
+    ..registerLazySingleton<WsRoute>(() => WsRoute(wsManager: getIt()));
 }

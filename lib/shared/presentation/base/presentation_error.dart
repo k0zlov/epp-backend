@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:ruta/ruta.dart';
 
 part 'presentation_error.g.dart';
 
@@ -14,4 +15,10 @@ abstract class PresentationError with _$PresentationError {
   }) = _PresentationError;
 
   factory PresentationError.fromJson(Map<String, dynamic> json) => _$PresentationErrorFromJson(json);
+
+  const PresentationError._();
+
+  Response toResponse() {
+    return Response.json(statusCode: statusCode, body: toJson());
+  }
 }
