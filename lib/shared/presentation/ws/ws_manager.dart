@@ -17,18 +17,24 @@ FutureOr<Response> wsHandler(
 }
 
 class WsManager {
-  /// Web Socket Channel ID, Web Socket Channel
-  final Map<String, WebSocketChannel> connections = {};
+  /// connectionId -> Web Socket Channel
+  final Map<String, WebSocketChannel> _connections = {};
 
-  /// WsClientInfo, Web Socket Channel IDs
-  final Map<ClientInfo, Set<String>> clientConnections = {};
+  /// connectionId -> ClientInfo
+  final Map<String, ClientInfo> _connectionInfo = {};
 
-  /// Topic, Web Socket Channel IDs
+  /// sessionId -> Set (connectionId)
+  final Map<String, Set<String>> _sessionToConnections = {};
+
+  /// userId -> Set (connectionId)
+  final Map<String, Set<String>> _userToConnections = {};
+
+  /// Topic -> Set (connectionId)
   final Map<WsTopic, Set<String>> topicSubscriptions = {};
 
   final Map<String, Set<WsTopic>> connectionSubscriptions = {};
 
-  /// Topic Name , Controller
+  /// Topic Name -> Controller
   final Map<String, WsController> _controllers = {};
 
   void registerController(WsController controller) {
@@ -46,29 +52,44 @@ class WsManager {
     required WebSocketChannel channel,
   }) async {
     final String connectionId = const UuidV4().generate();
+    _connections[connectionId] = channel;
+    _connectionInfo[connectionId] = clientInfo;
 
-    connections[connectionId] = channel;
-    clientConnections.putIfAbsent(clientInfo, () => {});
-    clientConnections[clientInfo]!.add(connectionId);
+    if (clientInfo.sessionId != null) {
+      _sessionToConnections.putIfAbsent(clientInfo.sessionId!, () => {}).add(connectionId);
+    }
+
+    if (clientInfo.userId != null) {
+      _userToConnections.putIfAbsent(clientInfo.userId!, () => {}).add(connectionId);
+    }
 
     channel.stream.listen(
       (rawData) async => _handleClientMessage(rawData, channel, clientInfo, connectionId),
-      onDone: () => disconnect(clientInfo: clientInfo, connectionId: connectionId),
-      onError: (error) => disconnect(clientInfo: clientInfo, connectionId: connectionId),
+      onDone: () => disconnect(connectionId),
+      onError: (_) => disconnect(connectionId),
     );
   }
 
-  Future<void> disconnect({
-    required ClientInfo clientInfo,
-    required String connectionId,
-  }) async {
-    final channel = connections.remove(connectionId);
+  Future<void> disconnect(String connectionId) async {
+    final channel = _connections.remove(connectionId);
     await channel?.sink.close();
 
-    final clientConns = clientConnections[clientInfo];
-    if (clientConns != null) {
-      clientConns.remove(connectionId);
-      if (clientConns.isEmpty) clientConnections.remove(clientInfo);
+    final info = _connectionInfo.remove(connectionId);
+
+    if (info != null) {
+      if (info.sessionId != null) {
+        _sessionToConnections[info.sessionId]?.remove(connectionId);
+        if (_sessionToConnections[info.sessionId]?.isEmpty ?? false) {
+          _sessionToConnections.remove(info.sessionId);
+        }
+      }
+
+      if (info.userId != null) {
+        _userToConnections[info.userId]?.remove(connectionId);
+        if (_userToConnections[info.userId]?.isEmpty ?? false) {
+          _userToConnections.remove(info.userId);
+        }
+      }
     }
 
     final subscriptions = connectionSubscriptions.remove(connectionId);
@@ -89,7 +110,7 @@ class WsManager {
     final String encodedMessage = jsonEncode(message.toJson());
 
     for (final connectionId in connectionIds) {
-      final channel = connections[connectionId];
+      final channel = _connections[connectionId];
       if (channel == null) continue;
       channel.sink.add(encodedMessage);
     }
@@ -177,6 +198,15 @@ class WsManager {
       if (topics.isEmpty) {
         connectionSubscriptions.remove(connectionId);
       }
+    }
+  }
+
+  Future<void> disconnectBySession(String sessionId) async {
+    final ids = _sessionToConnections[sessionId];
+    if (ids == null) return;
+
+    for (final id in ids) {
+      await disconnect(id);
     }
   }
 }

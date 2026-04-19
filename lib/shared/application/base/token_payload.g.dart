@@ -1,20 +1,19 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'client_info.dart';
+part of 'token_payload.dart';
 
 // **************************************************************************
 // JsonSerializableGenerator
 // **************************************************************************
 
-_ClientInfo _$ClientInfoFromJson(Map<String, dynamic> json) => _ClientInfo(
-  clientId: json['clientId'] as String,
-  userId: json['userId'] as String?,
-  sessionId: json['sessionId'] as String?,
-);
+_TokenPayload _$TokenPayloadFromJson(Map<String, dynamic> json) =>
+    _TokenPayload(
+      userId: json['userId'] as String,
+      sessionId: json['sessionId'] as String,
+    );
 
-Map<String, dynamic> _$ClientInfoToJson(_ClientInfo instance) =>
+Map<String, dynamic> _$TokenPayloadToJson(_TokenPayload instance) =>
     <String, dynamic>{
-      'clientId': instance.clientId,
       'userId': instance.userId,
       'sessionId': instance.sessionId,
     };

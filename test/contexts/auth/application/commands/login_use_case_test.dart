@@ -1,7 +1,7 @@
 import 'package:epp_backend/contexts/auth/application/commands/login_use_case.dart';
 import 'package:epp_backend/contexts/auth/application/view/tokens_view.dart';
 import 'package:epp_backend/contexts/auth/auth.dart';
-import 'package:epp_backend/shared/application/application.dart';
+import 'package:epp_backend/shared/application/base/token_payload.dart';
 import 'package:epp_backend/shared/infrastructure/infrastructure.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:test/test.dart';
@@ -49,43 +49,35 @@ void main() {
 
       when(() => repo().getUserByEmail(email())).thenAnswer((_) async => user);
       when(() => hashService().verify(password(), hash())).thenAnswer((_) async => true);
+      when(() => hashService().hash(any())).thenAnswer((_) async => 'hashed_refresh');
 
       when(
-        () => tokenService().issueToken(
-          userId: user.id,
-          expiresIn: any(named: 'expiresIn'),
-          type: TokenType.access,
+        () => tokenService().issue(
+          payload: any(named: 'payload'),
+          type: any(named: 'type'),
         ),
-      ).thenReturn('access_123');
-
-      when(
-        () => tokenService().issueToken(
-          userId: user.id,
-          expiresIn: any(named: 'expiresIn'),
-          type: TokenType.refresh,
-        ),
-      ).thenReturn('refresh_123');
+      ).thenReturn('mock_token');
 
       final result = await useCase(params());
 
       expect(result.isSuccess, isTrue);
-      final view = result.getSuccess;
-      expect(view.accessToken, 'access_123');
-      expect(view.refreshToken, 'refresh_123');
 
-      verify(() => repo().getUserByEmail(email())).called(1);
-      verify(() => hashService().verify(password(), hash())).called(1);
-      verify(
-        () => tokenService().issueToken(
-          userId: user.id,
-          expiresIn: any(named: 'expiresIn'),
-          type: any(named: 'type'),
-        ),
-      ).called(2);
+      final capturedPayload =
+          verify(
+                () => tokenService().issue(
+                  payload: captureAny(named: 'payload'),
+                  type: any(named: 'type'),
+                ),
+              ).captured.first
+              as TokenPayload;
+
+      expect(capturedPayload.userId, user.id);
+      expect(capturedPayload.sessionId, isNotEmpty);
 
       final events = bench.expectEventsSynchronized();
       final event = expectEvent<UserLoggedInEvent>(events);
       expect(event.user.id, user.id);
+      expect(capturedPayload.sessionId, event.session.id);
     });
 
     test('should return InvalidCredentials when user is not found', () async {
@@ -109,9 +101,8 @@ void main() {
       expect(result.isFailure, isTrue);
       expect(result.getFailure, isA<InvalidCredentials>());
       verifyNever(
-        () => tokenService().issueToken(
-          userId: any(named: 'userId'),
-          expiresIn: any(named: 'expiresIn'),
+        () => tokenService().issue(
+          payload: any(named: 'payload'),
           type: any(named: 'type'),
         ),
       );

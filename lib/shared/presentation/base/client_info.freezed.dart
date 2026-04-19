@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$ClientInfo {
 
- String get clientId; bool get isAuthorized;
+ String get clientId; String? get userId; String? get sessionId;
 /// Create a copy of ClientInfo
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +28,16 @@ $ClientInfoCopyWith<ClientInfo> get copyWith => _$ClientInfoCopyWithImpl<ClientI
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ClientInfo&&(identical(other.clientId, clientId) || other.clientId == clientId)&&(identical(other.isAuthorized, isAuthorized) || other.isAuthorized == isAuthorized));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ClientInfo&&(identical(other.clientId, clientId) || other.clientId == clientId)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.sessionId, sessionId) || other.sessionId == sessionId));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,clientId,isAuthorized);
+int get hashCode => Object.hash(runtimeType,clientId,userId,sessionId);
 
 @override
 String toString() {
-  return 'ClientInfo(clientId: $clientId, isAuthorized: $isAuthorized)';
+  return 'ClientInfo(clientId: $clientId, userId: $userId, sessionId: $sessionId)';
 }
 
 
@@ -48,7 +48,7 @@ abstract mixin class $ClientInfoCopyWith<$Res>  {
   factory $ClientInfoCopyWith(ClientInfo value, $Res Function(ClientInfo) _then) = _$ClientInfoCopyWithImpl;
 @useResult
 $Res call({
- String clientId, bool isAuthorized
+ String clientId, String? userId, String? sessionId
 });
 
 
@@ -65,11 +65,12 @@ class _$ClientInfoCopyWithImpl<$Res>
 
 /// Create a copy of ClientInfo
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? clientId = null,Object? isAuthorized = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? clientId = null,Object? userId = freezed,Object? sessionId = freezed,}) {
   return _then(_self.copyWith(
 clientId: null == clientId ? _self.clientId : clientId // ignore: cast_nullable_to_non_nullable
-as String,isAuthorized: null == isAuthorized ? _self.isAuthorized : isAuthorized // ignore: cast_nullable_to_non_nullable
-as bool,
+as String,userId: freezed == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
+as String?,sessionId: freezed == sessionId ? _self.sessionId : sessionId // ignore: cast_nullable_to_non_nullable
+as String?,
   ));
 }
 
@@ -154,10 +155,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String clientId,  bool isAuthorized)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String clientId,  String? userId,  String? sessionId)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _ClientInfo() when $default != null:
-return $default(_that.clientId,_that.isAuthorized);case _:
+return $default(_that.clientId,_that.userId,_that.sessionId);case _:
   return orElse();
 
 }
@@ -175,10 +176,10 @@ return $default(_that.clientId,_that.isAuthorized);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String clientId,  bool isAuthorized)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String clientId,  String? userId,  String? sessionId)  $default,) {final _that = this;
 switch (_that) {
 case _ClientInfo():
-return $default(_that.clientId,_that.isAuthorized);case _:
+return $default(_that.clientId,_that.userId,_that.sessionId);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -195,10 +196,10 @@ return $default(_that.clientId,_that.isAuthorized);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String clientId,  bool isAuthorized)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String clientId,  String? userId,  String? sessionId)?  $default,) {final _that = this;
 switch (_that) {
 case _ClientInfo() when $default != null:
-return $default(_that.clientId,_that.isAuthorized);case _:
+return $default(_that.clientId,_that.userId,_that.sessionId);case _:
   return null;
 
 }
@@ -209,12 +210,13 @@ return $default(_that.clientId,_that.isAuthorized);case _:
 /// @nodoc
 @JsonSerializable()
 
-class _ClientInfo implements ClientInfo {
-  const _ClientInfo({required this.clientId, required this.isAuthorized});
+class _ClientInfo extends ClientInfo {
+  const _ClientInfo({required this.clientId, required this.userId, required this.sessionId}): super._();
   factory _ClientInfo.fromJson(Map<String, dynamic> json) => _$ClientInfoFromJson(json);
 
 @override final  String clientId;
-@override final  bool isAuthorized;
+@override final  String? userId;
+@override final  String? sessionId;
 
 /// Create a copy of ClientInfo
 /// with the given fields replaced by the non-null parameter values.
@@ -229,16 +231,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ClientInfo&&(identical(other.clientId, clientId) || other.clientId == clientId)&&(identical(other.isAuthorized, isAuthorized) || other.isAuthorized == isAuthorized));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ClientInfo&&(identical(other.clientId, clientId) || other.clientId == clientId)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.sessionId, sessionId) || other.sessionId == sessionId));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,clientId,isAuthorized);
+int get hashCode => Object.hash(runtimeType,clientId,userId,sessionId);
 
 @override
 String toString() {
-  return 'ClientInfo(clientId: $clientId, isAuthorized: $isAuthorized)';
+  return 'ClientInfo(clientId: $clientId, userId: $userId, sessionId: $sessionId)';
 }
 
 
@@ -249,7 +251,7 @@ abstract mixin class _$ClientInfoCopyWith<$Res> implements $ClientInfoCopyWith<$
   factory _$ClientInfoCopyWith(_ClientInfo value, $Res Function(_ClientInfo) _then) = __$ClientInfoCopyWithImpl;
 @override @useResult
 $Res call({
- String clientId, bool isAuthorized
+ String clientId, String? userId, String? sessionId
 });
 
 
@@ -266,11 +268,12 @@ class __$ClientInfoCopyWithImpl<$Res>
 
 /// Create a copy of ClientInfo
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? clientId = null,Object? isAuthorized = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? clientId = null,Object? userId = freezed,Object? sessionId = freezed,}) {
   return _then(_ClientInfo(
 clientId: null == clientId ? _self.clientId : clientId // ignore: cast_nullable_to_non_nullable
-as String,isAuthorized: null == isAuthorized ? _self.isAuthorized : isAuthorized // ignore: cast_nullable_to_non_nullable
-as bool,
+as String,userId: freezed == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
+as String?,sessionId: freezed == sessionId ? _self.sessionId : sessionId // ignore: cast_nullable_to_non_nullable
+as String?,
   ));
 }
 

@@ -1,16 +1,7 @@
 import 'package:drift_postgres/drift_postgres.dart';
 import 'package:epp_backend/app/database/database.dart';
 import 'package:epp_backend/app/di/dot_env.dart';
-import 'package:epp_backend/contexts/auth/application/commands/confirm_email_use_case.dart';
-import 'package:epp_backend/contexts/auth/application/commands/login_use_case.dart';
-import 'package:epp_backend/contexts/auth/application/commands/send_auth_code_use_case.dart';
-import 'package:epp_backend/contexts/auth/application/commands/sign_up_use_case.dart';
 import 'package:epp_backend/contexts/auth/auth.dart';
-import 'package:epp_backend/contexts/auth/infrastructure/projectors/auth_code_created_projector.dart';
-import 'package:epp_backend/contexts/auth/infrastructure/projectors/email_confirmation_failed_projector.dart';
-import 'package:epp_backend/contexts/auth/infrastructure/projectors/email_confirmed_projector.dart';
-import 'package:epp_backend/contexts/auth/infrastructure/projectors/user_logged_in_projector.dart';
-import 'package:epp_backend/contexts/auth/infrastructure/projectors/user_signed_up_projector.dart';
 import 'package:epp_backend/contexts/auth/presentation/errors/auth_failure_mapper.dart';
 import 'package:epp_backend/contexts/auth/presentation/rest/auth_controller.dart';
 import 'package:epp_backend/shared/application/application.dart';
@@ -80,6 +71,7 @@ Future<void> _projector() async {
       EmailConfirmationFailedProjector(db: getIt()),
       EmailConfirmedProjector(db: getIt()),
       AuthCodeCreatedProjector(db: getIt()),
+      AuthSessionRefreshedProjector(db: getIt()),
     ]),
   );
 }

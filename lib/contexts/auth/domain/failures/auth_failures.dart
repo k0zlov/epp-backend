@@ -57,3 +57,9 @@ class AuthCodeRequestTooFrequent extends AuthFailure with DomainFailureDetails {
   @override
   Map<String, dynamic> getDetails() => {'retry_after_seconds': retryAfterSeconds};
 }
+
+class AuthSessionNotFound extends AuthFailure {}
+
+class AuthSessionInvalid extends AuthFailure {}
+
+class AuthTokenInvalid extends AuthFailure {}

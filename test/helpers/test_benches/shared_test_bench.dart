@@ -1,4 +1,5 @@
 import 'package:epp_backend/shared/application/application.dart';
+import 'package:epp_backend/shared/application/base/token_payload.dart';
 import 'package:epp_backend/shared/domain/domain.dart';
 import 'package:meta/meta.dart';
 import 'package:mocktail/mocktail.dart';
@@ -27,6 +28,7 @@ class SharedTestBench<T> {
   void registerFallbacks() {
     registerFallbackValue(Duration.zero);
     registerFallbackValue(TokenType.access);
+    registerFallbackValue(const TokenPayload(userId: '', sessionId: ''));
   }
 
   @protected
@@ -42,12 +44,14 @@ class SharedTestBench<T> {
     when(() => projector.projectAll(any())).thenAnswer((_) async => {});
     when(() => eventBus.publishAll(any())).thenAnswer((_) => {});
     when(
-      () => tokenService.issueToken(
-        userId: any(named: 'userId'),
-        expiresIn: any(named: 'expiresIn'),
+      () => tokenService.issue(
+        payload: any(named: 'payload'),
         type: any(named: 'type'),
       ),
     ).thenReturn('mock_token');
+
+    when(() => tokenService.accessTokenExpiresIn).thenReturn(const Duration(minutes: 30));
+    when(() => tokenService.refreshTokenExpiresIn).thenReturn(const Duration(days: 15));
   }
 
   List<DomainEvent> expectEventsSynchronized() {

@@ -561,12 +561,12 @@ class $AuthSessionsTable extends AuthSessions
       'REFERENCES users (id) ON DELETE CASCADE',
     ),
   );
-  static const VerificationMeta _refreshTokenMeta = const VerificationMeta(
-    'refreshToken',
+  static const VerificationMeta _tokenHashMeta = const VerificationMeta(
+    'tokenHash',
   );
   @override
-  late final GeneratedColumn<String> refreshToken = GeneratedColumn<String>(
-    'refresh_token',
+  late final GeneratedColumn<String> tokenHash = GeneratedColumn<String>(
+    'token_hash',
     aliasedName,
     false,
     type: DriftSqlType.string,
@@ -631,7 +631,7 @@ class $AuthSessionsTable extends AuthSessions
   List<GeneratedColumn> get $columns => [
     id,
     userId,
-    refreshToken,
+    tokenHash,
     ipAddress,
     userAgent,
     expiresAt,
@@ -663,16 +663,13 @@ class $AuthSessionsTable extends AuthSessions
     } else if (isInserting) {
       context.missing(_userIdMeta);
     }
-    if (data.containsKey('refresh_token')) {
+    if (data.containsKey('token_hash')) {
       context.handle(
-        _refreshTokenMeta,
-        refreshToken.isAcceptableOrUnknown(
-          data['refresh_token']!,
-          _refreshTokenMeta,
-        ),
+        _tokenHashMeta,
+        tokenHash.isAcceptableOrUnknown(data['token_hash']!, _tokenHashMeta),
       );
     } else if (isInserting) {
-      context.missing(_refreshTokenMeta);
+      context.missing(_tokenHashMeta);
     }
     if (data.containsKey('ip_address')) {
       context.handle(
@@ -731,9 +728,9 @@ class $AuthSessionsTable extends AuthSessions
         DriftSqlType.string,
         data['${effectivePrefix}user_id'],
       )!,
-      refreshToken: attachedDatabase.typeMapping.read(
+      tokenHash: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
-        data['${effectivePrefix}refresh_token'],
+        data['${effectivePrefix}token_hash'],
       )!,
       ipAddress: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
@@ -767,7 +764,7 @@ class $AuthSessionsTable extends AuthSessions
 class AuthSessionRow extends DataClass implements Insertable<AuthSessionRow> {
   final String id;
   final String userId;
-  final String refreshToken;
+  final String tokenHash;
   final String ipAddress;
   final String userAgent;
   final DateTime expiresAt;
@@ -776,7 +773,7 @@ class AuthSessionRow extends DataClass implements Insertable<AuthSessionRow> {
   const AuthSessionRow({
     required this.id,
     required this.userId,
-    required this.refreshToken,
+    required this.tokenHash,
     required this.ipAddress,
     required this.userAgent,
     required this.expiresAt,
@@ -788,7 +785,7 @@ class AuthSessionRow extends DataClass implements Insertable<AuthSessionRow> {
     final map = <String, Expression>{};
     map['id'] = Variable<String>(id);
     map['user_id'] = Variable<String>(userId);
-    map['refresh_token'] = Variable<String>(refreshToken);
+    map['token_hash'] = Variable<String>(tokenHash);
     map['ip_address'] = Variable<String>(ipAddress);
     map['user_agent'] = Variable<String>(userAgent);
     map['expires_at'] = Variable<DateTime>(expiresAt);
@@ -801,7 +798,7 @@ class AuthSessionRow extends DataClass implements Insertable<AuthSessionRow> {
     return AuthSessionsCompanion(
       id: Value(id),
       userId: Value(userId),
-      refreshToken: Value(refreshToken),
+      tokenHash: Value(tokenHash),
       ipAddress: Value(ipAddress),
       userAgent: Value(userAgent),
       expiresAt: Value(expiresAt),
@@ -818,7 +815,7 @@ class AuthSessionRow extends DataClass implements Insertable<AuthSessionRow> {
     return AuthSessionRow(
       id: serializer.fromJson<String>(json['id']),
       userId: serializer.fromJson<String>(json['userId']),
-      refreshToken: serializer.fromJson<String>(json['refreshToken']),
+      tokenHash: serializer.fromJson<String>(json['tokenHash']),
       ipAddress: serializer.fromJson<String>(json['ipAddress']),
       userAgent: serializer.fromJson<String>(json['userAgent']),
       expiresAt: serializer.fromJson<DateTime>(json['expiresAt']),
@@ -832,7 +829,7 @@ class AuthSessionRow extends DataClass implements Insertable<AuthSessionRow> {
     return <String, dynamic>{
       'id': serializer.toJson<String>(id),
       'userId': serializer.toJson<String>(userId),
-      'refreshToken': serializer.toJson<String>(refreshToken),
+      'tokenHash': serializer.toJson<String>(tokenHash),
       'ipAddress': serializer.toJson<String>(ipAddress),
       'userAgent': serializer.toJson<String>(userAgent),
       'expiresAt': serializer.toJson<DateTime>(expiresAt),
@@ -844,7 +841,7 @@ class AuthSessionRow extends DataClass implements Insertable<AuthSessionRow> {
   AuthSessionRow copyWith({
     String? id,
     String? userId,
-    String? refreshToken,
+    String? tokenHash,
     String? ipAddress,
     String? userAgent,
     DateTime? expiresAt,
@@ -853,7 +850,7 @@ class AuthSessionRow extends DataClass implements Insertable<AuthSessionRow> {
   }) => AuthSessionRow(
     id: id ?? this.id,
     userId: userId ?? this.userId,
-    refreshToken: refreshToken ?? this.refreshToken,
+    tokenHash: tokenHash ?? this.tokenHash,
     ipAddress: ipAddress ?? this.ipAddress,
     userAgent: userAgent ?? this.userAgent,
     expiresAt: expiresAt ?? this.expiresAt,
@@ -864,9 +861,7 @@ class AuthSessionRow extends DataClass implements Insertable<AuthSessionRow> {
     return AuthSessionRow(
       id: data.id.present ? data.id.value : this.id,
       userId: data.userId.present ? data.userId.value : this.userId,
-      refreshToken: data.refreshToken.present
-          ? data.refreshToken.value
-          : this.refreshToken,
+      tokenHash: data.tokenHash.present ? data.tokenHash.value : this.tokenHash,
       ipAddress: data.ipAddress.present ? data.ipAddress.value : this.ipAddress,
       userAgent: data.userAgent.present ? data.userAgent.value : this.userAgent,
       expiresAt: data.expiresAt.present ? data.expiresAt.value : this.expiresAt,
@@ -880,7 +875,7 @@ class AuthSessionRow extends DataClass implements Insertable<AuthSessionRow> {
     return (StringBuffer('AuthSessionRow(')
           ..write('id: $id, ')
           ..write('userId: $userId, ')
-          ..write('refreshToken: $refreshToken, ')
+          ..write('tokenHash: $tokenHash, ')
           ..write('ipAddress: $ipAddress, ')
           ..write('userAgent: $userAgent, ')
           ..write('expiresAt: $expiresAt, ')
@@ -894,7 +889,7 @@ class AuthSessionRow extends DataClass implements Insertable<AuthSessionRow> {
   int get hashCode => Object.hash(
     id,
     userId,
-    refreshToken,
+    tokenHash,
     ipAddress,
     userAgent,
     expiresAt,
@@ -907,7 +902,7 @@ class AuthSessionRow extends DataClass implements Insertable<AuthSessionRow> {
       (other is AuthSessionRow &&
           other.id == this.id &&
           other.userId == this.userId &&
-          other.refreshToken == this.refreshToken &&
+          other.tokenHash == this.tokenHash &&
           other.ipAddress == this.ipAddress &&
           other.userAgent == this.userAgent &&
           other.expiresAt == this.expiresAt &&
@@ -918,7 +913,7 @@ class AuthSessionRow extends DataClass implements Insertable<AuthSessionRow> {
 class AuthSessionsCompanion extends UpdateCompanion<AuthSessionRow> {
   final Value<String> id;
   final Value<String> userId;
-  final Value<String> refreshToken;
+  final Value<String> tokenHash;
   final Value<String> ipAddress;
   final Value<String> userAgent;
   final Value<DateTime> expiresAt;
@@ -928,7 +923,7 @@ class AuthSessionsCompanion extends UpdateCompanion<AuthSessionRow> {
   const AuthSessionsCompanion({
     this.id = const Value.absent(),
     this.userId = const Value.absent(),
-    this.refreshToken = const Value.absent(),
+    this.tokenHash = const Value.absent(),
     this.ipAddress = const Value.absent(),
     this.userAgent = const Value.absent(),
     this.expiresAt = const Value.absent(),
@@ -939,7 +934,7 @@ class AuthSessionsCompanion extends UpdateCompanion<AuthSessionRow> {
   AuthSessionsCompanion.insert({
     required String id,
     required String userId,
-    required String refreshToken,
+    required String tokenHash,
     required String ipAddress,
     required String userAgent,
     required DateTime expiresAt,
@@ -948,7 +943,7 @@ class AuthSessionsCompanion extends UpdateCompanion<AuthSessionRow> {
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        userId = Value(userId),
-       refreshToken = Value(refreshToken),
+       tokenHash = Value(tokenHash),
        ipAddress = Value(ipAddress),
        userAgent = Value(userAgent),
        expiresAt = Value(expiresAt),
@@ -957,7 +952,7 @@ class AuthSessionsCompanion extends UpdateCompanion<AuthSessionRow> {
   static Insertable<AuthSessionRow> custom({
     Expression<String>? id,
     Expression<String>? userId,
-    Expression<String>? refreshToken,
+    Expression<String>? tokenHash,
     Expression<String>? ipAddress,
     Expression<String>? userAgent,
     Expression<DateTime>? expiresAt,
@@ -968,7 +963,7 @@ class AuthSessionsCompanion extends UpdateCompanion<AuthSessionRow> {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (userId != null) 'user_id': userId,
-      if (refreshToken != null) 'refresh_token': refreshToken,
+      if (tokenHash != null) 'token_hash': tokenHash,
       if (ipAddress != null) 'ip_address': ipAddress,
       if (userAgent != null) 'user_agent': userAgent,
       if (expiresAt != null) 'expires_at': expiresAt,
@@ -981,7 +976,7 @@ class AuthSessionsCompanion extends UpdateCompanion<AuthSessionRow> {
   AuthSessionsCompanion copyWith({
     Value<String>? id,
     Value<String>? userId,
-    Value<String>? refreshToken,
+    Value<String>? tokenHash,
     Value<String>? ipAddress,
     Value<String>? userAgent,
     Value<DateTime>? expiresAt,
@@ -992,7 +987,7 @@ class AuthSessionsCompanion extends UpdateCompanion<AuthSessionRow> {
     return AuthSessionsCompanion(
       id: id ?? this.id,
       userId: userId ?? this.userId,
-      refreshToken: refreshToken ?? this.refreshToken,
+      tokenHash: tokenHash ?? this.tokenHash,
       ipAddress: ipAddress ?? this.ipAddress,
       userAgent: userAgent ?? this.userAgent,
       expiresAt: expiresAt ?? this.expiresAt,
@@ -1011,8 +1006,8 @@ class AuthSessionsCompanion extends UpdateCompanion<AuthSessionRow> {
     if (userId.present) {
       map['user_id'] = Variable<String>(userId.value);
     }
-    if (refreshToken.present) {
-      map['refresh_token'] = Variable<String>(refreshToken.value);
+    if (tokenHash.present) {
+      map['token_hash'] = Variable<String>(tokenHash.value);
     }
     if (ipAddress.present) {
       map['ip_address'] = Variable<String>(ipAddress.value);
@@ -1040,7 +1035,7 @@ class AuthSessionsCompanion extends UpdateCompanion<AuthSessionRow> {
     return (StringBuffer('AuthSessionsCompanion(')
           ..write('id: $id, ')
           ..write('userId: $userId, ')
-          ..write('refreshToken: $refreshToken, ')
+          ..write('tokenHash: $tokenHash, ')
           ..write('ipAddress: $ipAddress, ')
           ..write('userAgent: $userAgent, ')
           ..write('expiresAt: $expiresAt, ')
@@ -1684,13 +1679,13 @@ abstract class _$Database extends GeneratedDatabase {
     SqlDialect.postgres:
         'CREATE INDEX sessions_user_id_idx ON auth_sessions (user_id)',
   });
-  late final Index
-  sessionsRefreshTokenIdx = Index.byDialect('sessions_refresh_token_idx', {
-    SqlDialect.sqlite:
-        'CREATE INDEX sessions_refresh_token_idx ON auth_sessions (refresh_token)',
-    SqlDialect.postgres:
-        'CREATE INDEX sessions_refresh_token_idx ON auth_sessions (refresh_token)',
-  });
+  late final Index sessionsRefreshTokenIdx =
+      Index.byDialect('sessions_refresh_token_idx', {
+        SqlDialect.sqlite:
+            'CREATE INDEX sessions_refresh_token_idx ON auth_sessions ()',
+        SqlDialect.postgres:
+            'CREATE INDEX sessions_refresh_token_idx ON auth_sessions ()',
+      });
   late final Index codesUserIdIdx = Index.byDialect('codes_user_id_idx', {
     SqlDialect.sqlite: 'CREATE INDEX codes_user_id_idx ON auth_codes (user_id)',
     SqlDialect.postgres:
@@ -2191,7 +2186,7 @@ typedef $$AuthSessionsTableCreateCompanionBuilder =
     AuthSessionsCompanion Function({
       required String id,
       required String userId,
-      required String refreshToken,
+      required String tokenHash,
       required String ipAddress,
       required String userAgent,
       required DateTime expiresAt,
@@ -2203,7 +2198,7 @@ typedef $$AuthSessionsTableUpdateCompanionBuilder =
     AuthSessionsCompanion Function({
       Value<String> id,
       Value<String> userId,
-      Value<String> refreshToken,
+      Value<String> tokenHash,
       Value<String> ipAddress,
       Value<String> userAgent,
       Value<DateTime> expiresAt,
@@ -2249,8 +2244,8 @@ class $$AuthSessionsTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<String> get refreshToken => $composableBuilder(
-    column: $table.refreshToken,
+  ColumnFilters<String> get tokenHash => $composableBuilder(
+    column: $table.tokenHash,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -2317,8 +2312,8 @@ class $$AuthSessionsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<String> get refreshToken => $composableBuilder(
-    column: $table.refreshToken,
+  ColumnOrderings<String> get tokenHash => $composableBuilder(
+    column: $table.tokenHash,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -2383,10 +2378,8 @@ class $$AuthSessionsTableAnnotationComposer
   GeneratedColumn<String> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
 
-  GeneratedColumn<String> get refreshToken => $composableBuilder(
-    column: $table.refreshToken,
-    builder: (column) => column,
-  );
+  GeneratedColumn<String> get tokenHash =>
+      $composableBuilder(column: $table.tokenHash, builder: (column) => column);
 
   GeneratedColumn<String> get ipAddress =>
       $composableBuilder(column: $table.ipAddress, builder: (column) => column);
@@ -2457,7 +2450,7 @@ class $$AuthSessionsTableTableManager
               ({
                 Value<String> id = const Value.absent(),
                 Value<String> userId = const Value.absent(),
-                Value<String> refreshToken = const Value.absent(),
+                Value<String> tokenHash = const Value.absent(),
                 Value<String> ipAddress = const Value.absent(),
                 Value<String> userAgent = const Value.absent(),
                 Value<DateTime> expiresAt = const Value.absent(),
@@ -2467,7 +2460,7 @@ class $$AuthSessionsTableTableManager
               }) => AuthSessionsCompanion(
                 id: id,
                 userId: userId,
-                refreshToken: refreshToken,
+                tokenHash: tokenHash,
                 ipAddress: ipAddress,
                 userAgent: userAgent,
                 expiresAt: expiresAt,
@@ -2479,7 +2472,7 @@ class $$AuthSessionsTableTableManager
               ({
                 required String id,
                 required String userId,
-                required String refreshToken,
+                required String tokenHash,
                 required String ipAddress,
                 required String userAgent,
                 required DateTime expiresAt,
@@ -2489,7 +2482,7 @@ class $$AuthSessionsTableTableManager
               }) => AuthSessionsCompanion.insert(
                 id: id,
                 userId: userId,
-                refreshToken: refreshToken,
+                tokenHash: tokenHash,
                 ipAddress: ipAddress,
                 userAgent: userAgent,
                 expiresAt: expiresAt,

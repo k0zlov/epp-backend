@@ -3,6 +3,7 @@ import 'package:epp_backend/shared/application/base/mail_template.dart';
 
 class AuthCodeTemplate extends MailTemplate {
   AuthCodeTemplate({
+    required this.codeExpiresInMinutes,
     required this.displayName,
     required this.code,
     required this.type,
@@ -11,6 +12,7 @@ class AuthCodeTemplate extends MailTemplate {
   final String displayName;
   final String code;
   final AuthCodeType type;
+  final int codeExpiresInMinutes;
 
   @override
   String get templateName => 'auth_code';
@@ -27,5 +29,6 @@ class AuthCodeTemplate extends MailTemplate {
     'code': code,
     'is_email_verification': type == AuthCodeType.emailVerification,
     'is_password_reset': type == AuthCodeType.passwordReset,
+    'codeExpiresInMinutes': codeExpiresInMinutes,
   };
 }

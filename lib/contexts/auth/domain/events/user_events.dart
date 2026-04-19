@@ -38,3 +38,9 @@ class AuthCodeCreatedEvent extends UserEvents {
   final AuthCode code;
   final List<AuthCode> invalidatedCodes;
 }
+
+class AuthSessionRefreshedEvent extends UserEvents {
+  AuthSessionRefreshedEvent({required super.user, required this.session});
+
+  final AuthSession session;
+}

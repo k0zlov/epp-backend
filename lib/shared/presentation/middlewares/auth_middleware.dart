@@ -1,3 +1,4 @@
+import 'package:epp_backend/shared/application/base/token_payload.dart';
 import 'package:epp_backend/shared/application/ports/token_service.dart';
 import 'package:epp_backend/shared/presentation/base/client_info.dart';
 import 'package:epp_backend/shared/presentation/extensions/request_x.dart';
@@ -29,18 +30,16 @@ class AuthMiddleware extends Middleware {
       final String? token = _extractToken(request);
       final String? clientId = _extractClientId(request);
 
-      String? userId;
-      bool isAuthorized = false;
+      TokenPayload? tokenPayload;
 
-      if (token != null && tokenService.isValid(token)) {
-        userId = tokenService.extractUserId(token);
-
-        if (userId != null) isAuthorized = true;
+      if (token != null && tokenService.verify(token)) {
+        tokenPayload = tokenService.extractPayload(token);
       }
 
       final clientInfo = ClientInfo(
-        clientId: userId ?? clientId ?? const UuidV4().generate(),
-        isAuthorized: isAuthorized,
+        clientId: clientId ?? const UuidV4().generate(),
+        userId: tokenPayload?.userId,
+        sessionId: tokenPayload?.sessionId,
       );
 
       final newRequest = request.copyWith(

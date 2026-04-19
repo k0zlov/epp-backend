@@ -2,9 +2,11 @@ import 'package:epp_backend/contexts/auth/application/ports/user_repository.dart
 import 'package:epp_backend/contexts/auth/application/view/tokens_view.dart';
 import 'package:epp_backend/contexts/auth/domain/domain.dart';
 import 'package:epp_backend/shared/application/application.dart';
+import 'package:epp_backend/shared/application/base/token_payload.dart';
 import 'package:epp_backend/shared/domain/base/result.dart';
 import 'package:epp_backend/shared/infrastructure/infrastructure.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:uuid/v4.dart';
 
 part 'login_use_case.g.dart';
 
@@ -58,32 +60,32 @@ class LoginUseCase extends UseCase<TokensView, LoginParams> {
         return Failure(UserNotVerified());
       }
 
-      const accessExpiresIn = Duration(minutes: 30);
-      const refreshExpiresIn = Duration(days: 30);
+      final String sessionId = const UuidV4().generate();
 
-      final accessToken = tokenService.issueToken(
-        userId: user.id,
-        expiresIn: accessExpiresIn,
-        type: TokenType.access,
-      );
-
-      final refreshToken = tokenService.issueToken(
-        userId: user.id,
-        expiresIn: refreshExpiresIn,
+      final refreshToken = tokenService.issue(
+        payload: TokenPayload(userId: user.id, sessionId: sessionId),
         type: TokenType.refresh,
       );
 
+      final refreshTokenHash = await hashService.hash(refreshToken);
+
       final result = user.authenticate(
-        refreshToken: refreshToken,
+        sessionId: sessionId,
+        refreshTokenHash: refreshTokenHash,
         ipAddress: params.ipAddress,
         userAgent: params.userAgent,
-        expiresAt: DateTime.timestamp().add(refreshExpiresIn),
+        expiresAt: DateTime.timestamp().add(tokenService.refreshTokenExpiresIn),
       );
 
       await projector.projectAll(user.events);
       eventBus.publishAll(user.events);
 
       return result.fold(Failure.new, (_) async {
+        final accessToken = tokenService.issue(
+          payload: TokenPayload(userId: user.id, sessionId: sessionId),
+          type: TokenType.access,
+        );
+
         return Success(TokensView(accessToken: accessToken, refreshToken: refreshToken));
       });
     });

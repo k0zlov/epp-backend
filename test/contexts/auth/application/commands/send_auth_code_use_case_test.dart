@@ -17,7 +17,9 @@ void main() {
 
   setUpAll(() {
     registerFallbackValue(const SendAuthCodeParams(email: '', type: AuthCodeType.emailVerification));
-    registerFallbackValue(AuthCodeTemplate(displayName: '', code: '', type: AuthCodeType.emailVerification));
+    registerFallbackValue(
+      AuthCodeTemplate(displayName: '', code: '', type: AuthCodeType.emailVerification, codeExpiresInMinutes: 0),
+    );
   });
 
   setUp(() {

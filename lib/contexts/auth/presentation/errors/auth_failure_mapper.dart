@@ -27,6 +27,18 @@ class AuthFailureMapper extends FailureMapper<AuthFailure> {
         HttpStatus.tooManyRequests,
         'Too many requests. Please try again in $seconds seconds.',
       ),
+      AuthSessionNotFound() => (
+        HttpStatus.unauthorized,
+        'Active session not found. Please log in again.',
+      ),
+      AuthSessionInvalid() => (
+        HttpStatus.unauthorized,
+        'Your session is no longer valid or has been revoked.',
+      ),
+      AuthTokenInvalid() => (
+        HttpStatus.unauthorized,
+        'Security alert: Invalid or reused authentication token.',
+      ),
     };
   }
 }

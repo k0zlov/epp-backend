@@ -53,13 +53,15 @@ class User extends Aggregate {
   List<AuthCode> get codes => List.unmodifiable(_codes);
 
   Result<void> authenticate({
-    required String refreshToken,
+    required String sessionId,
+    required String refreshTokenHash,
     required String ipAddress,
     required String userAgent,
     required DateTime expiresAt,
   }) {
     final sessionResult = AuthSession.create(
-      refreshToken: refreshToken,
+      id: sessionId,
+      tokenHash: refreshTokenHash,
       ipAddress: ipAddress,
       userAgent: userAgent,
       expiresAt: expiresAt,
@@ -114,7 +116,11 @@ class User extends Aggregate {
     return const Success(null);
   }
 
-  Result<void> createAuthCode({required String codeHash, required AuthCodeType type}) {
+  Result<void> createAuthCode({
+    required String codeHash,
+    required AuthCodeType type,
+    required DateTime expiresAt,
+  }) {
     if (type == AuthCodeType.emailVerification && isVerified) return Failure(UserAlreadyVerified());
 
     final lastCode = _codes.where((e) => e.type == type).lastOrNull;
@@ -130,8 +136,6 @@ class User extends Aggregate {
 
     final List<AuthCode> invalidatedCodes = _codes.where((e) => e.type == type).toList()
       ..forEach((e) => e.invalidate());
-
-    final expiresAt = DateTime.now().add(const Duration(minutes: 15));
 
     final result = AuthCode.create(
       hash: codeHash,
@@ -153,6 +157,46 @@ class User extends Aggregate {
         invalidatedCodes: invalidatedCodes,
       ),
     );
+    return const Success(null);
+  }
+
+  Result<AuthSession> findSession({required String sessionId}) {
+    final session = _sessions.firstWhereOrNull((e) => e.id == sessionId);
+
+    if (session == null) {
+      return Failure(AuthSessionNotFound());
+    }
+
+    return Success(session);
+  }
+
+  Result<void> refreshSession({
+    required bool isTokenValid,
+    required String newTokenHash,
+    required String sessionId,
+    required String ipAddress,
+    required String userAgent,
+    required DateTime expiresAt,
+  }) {
+    final sessionResult = findSession(sessionId: sessionId);
+
+    if (sessionResult.isFailure) return sessionResult;
+
+    final session = sessionResult.getSuccess;
+
+    final result = session.refresh(
+      isTokenValid: isTokenValid,
+      newTokenHash: newTokenHash,
+      ipAddress: ipAddress,
+      userAgent: userAgent,
+      expiresAt: expiresAt,
+    );
+
+    if (result.isFailure) return result;
+
+    updateTimestamp();
+
+    addEvent(AuthSessionRefreshedEvent(user: this, session: session));
     return const Success(null);
   }
 }

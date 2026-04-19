@@ -9,7 +9,7 @@ class AuthSessions extends Table {
 
   TextColumn get userId => text().references(Users, #id, onDelete: KeyAction.cascade)();
 
-  TextColumn get refreshToken => text()();
+  TextColumn get tokenHash => text()();
 
   TextColumn get ipAddress => text()();
 

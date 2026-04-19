@@ -54,16 +54,25 @@ class SendAuthCodeUseCase extends UseCase<void, SendAuthCodeParams> {
 
         const AuthCodeType type = AuthCodeType.emailVerification;
 
-        final result = user.createAuthCode(codeHash: codeHash, type: type);
+        const codeExpiresInMinutes = 15;
+        final codeExpiresAt = DateTime.timestamp().add(const Duration(minutes: codeExpiresInMinutes));
+
+        final result = user.createAuthCode(codeHash: codeHash, type: type, expiresAt: codeExpiresAt);
 
         await projector.projectAll(user.events);
         eventBus.publishAll(user.events);
 
         if (result.isFailure) return result;
+
         try {
           await mailService.sendTemplate(
             to: [user.email.value],
-            template: AuthCodeTemplate(displayName: user.displayName, code: code, type: type),
+            template: AuthCodeTemplate(
+              displayName: user.displayName,
+              code: code,
+              type: type,
+              codeExpiresInMinutes: codeExpiresInMinutes,
+            ),
           );
         } on Exception catch (e, st) {
           throw InfrastructureException(
