@@ -1,30 +1,19 @@
-import 'dart:io';
+import 'package:epp_backend/shared/application/base/mail_template.dart';
 import 'package:epp_backend/shared/application/ports/mail_service.dart';
+import 'package:epp_backend/shared/infrastructure/mixins/mail_template_loader_mixin.dart';
 import 'package:mailer/mailer.dart' as mailer;
 import 'package:mailer/smtp_server.dart';
-import 'package:mustache_template/mustache.dart';
-import 'package:path/path.dart' as path;
 
-class SmtpMailService implements MailService {
-  const SmtpMailService({
-    required this.templatesPath,
+class SmtpMailService with MailTemplateLoaderMixin implements MailService {
+  SmtpMailService({
+    required this.templatesFolderPath,
     required this.domainTitle,
     required this.server,
   });
 
-  final String templatesPath;
+  final String templatesFolderPath;
   final String domainTitle;
   final SmtpServer server;
-
-  Future<String> _loadTemplate(String name) async {
-    final file = File(path.join(templatesPath, '$name.html'));
-
-    if (!file.existsSync()) {
-      throw Exception('Template $name not found at ${file.path}');
-    }
-
-    return file.readAsString();
-  }
 
   @override
   Future<void> send({
@@ -47,13 +36,14 @@ class SmtpMailService implements MailService {
   @override
   Future<void> sendTemplate({
     required List<String> to,
-    required String subject,
-    required String templateName,
-    Map<String, dynamic> vars = const {},
+    required MailTemplate template,
     String? from,
   }) async {
-    final source = await _loadTemplate(templateName);
-    final html = Template(source).renderString(vars);
-    return send(to: to, subject: subject, from: from, html: html);
+    final t = await loadTemplate(
+      templateName: template.templateName,
+      templatesFolderPath: templatesFolderPath,
+    );
+    final html = t.renderString({...template.vars, 'subject': template.subject});
+    return send(to: to, subject: template.subject, from: from, html: html);
   }
 }

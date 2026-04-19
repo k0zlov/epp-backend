@@ -1,8 +1,15 @@
 import 'package:drift_postgres/drift_postgres.dart';
 import 'package:epp_backend/app/database/database.dart';
 import 'package:epp_backend/app/di/dot_env.dart';
+import 'package:epp_backend/contexts/auth/application/commands/confirm_email_use_case.dart';
+import 'package:epp_backend/contexts/auth/application/commands/login_use_case.dart';
+import 'package:epp_backend/contexts/auth/application/commands/send_auth_code_use_case.dart';
 import 'package:epp_backend/contexts/auth/application/commands/sign_up_use_case.dart';
 import 'package:epp_backend/contexts/auth/auth.dart';
+import 'package:epp_backend/contexts/auth/infrastructure/projectors/auth_code_created_projector.dart';
+import 'package:epp_backend/contexts/auth/infrastructure/projectors/email_confirmation_failed_projector.dart';
+import 'package:epp_backend/contexts/auth/infrastructure/projectors/email_confirmed_projector.dart';
+import 'package:epp_backend/contexts/auth/infrastructure/projectors/user_logged_in_projector.dart';
 import 'package:epp_backend/contexts/auth/infrastructure/projectors/user_signed_up_projector.dart';
 import 'package:epp_backend/contexts/auth/presentation/errors/auth_failure_mapper.dart';
 import 'package:epp_backend/contexts/auth/presentation/rest/auth_controller.dart';
@@ -58,7 +65,7 @@ Future<void> _services() async {
     ..registerLazySingleton<EventBus>(InMemoryEventBus.new)
     ..registerLazySingleton<MailService>(
       () => SmtpMailService(
-        templatesPath: 'assets/mail_templates',
+        templatesFolderPath: 'assets/mail_templates',
         domainTitle: env(DotEnvKey.domainTitle),
         server: SmtpServer(env(DotEnvKey.smtpHost), port: int.parse(env(DotEnvKey.smtpPort)), allowInsecure: true),
       ),
@@ -69,6 +76,10 @@ Future<void> _projector() async {
   getIt.registerLazySingleton<EventProjector>(
     () => RegistryEventProjector([
       UserSignedUpProjector(db: getIt()),
+      UserLoggedInProjector(db: getIt()),
+      EmailConfirmationFailedProjector(db: getIt()),
+      EmailConfirmedProjector(db: getIt()),
+      AuthCodeCreatedProjector(db: getIt()),
     ]),
   );
 }
@@ -88,15 +99,45 @@ Future<void> _wsManager() async {
 }
 
 Future<void> _useCases() async {
-  getIt.registerLazySingleton(
-    () => SignUpUseCase(
-      projector: getIt(),
-      repository: getIt(),
-      unitOfWork: getIt(),
-      hashService: getIt(),
-      eventBus: getIt(),
-    ),
-  );
+  getIt
+    ..registerLazySingleton(
+      () => SignUpUseCase(
+        projector: getIt(),
+        repository: getIt(),
+        unitOfWork: getIt(),
+        hashService: getIt(),
+        eventBus: getIt(),
+      ),
+    )
+    ..registerLazySingleton(
+      () => LoginUseCase(
+        hashService: getIt(),
+        tokenService: getIt(),
+        unitOfWork: getIt(),
+        projector: getIt(),
+        repository: getIt(),
+        eventBus: getIt(),
+      ),
+    )
+    ..registerLazySingleton(
+      () => SendAuthCodeUseCase(
+        mailService: getIt(),
+        hashService: getIt(),
+        repository: getIt(),
+        unitOfWork: getIt(),
+        eventBus: getIt(),
+        projector: getIt(),
+      ),
+    )
+    ..registerLazySingleton(
+      () => ConfirmEmailUseCase(
+        unitOfWork: getIt(),
+        repository: getIt(),
+        hashService: getIt(),
+        projector: getIt(),
+        eventBus: getIt(),
+      ),
+    );
 }
 
 Future<void> _failureMappers() async {
@@ -104,7 +145,15 @@ Future<void> _failureMappers() async {
 }
 
 Future<void> _controllers() async {
-  getIt.registerLazySingleton<AuthController>(() => AuthController(failureMapper: getIt(), signUpUseCase: getIt()));
+  getIt.registerLazySingleton<AuthController>(
+    () => AuthController(
+      failureMapper: getIt(),
+      signUpUseCase: getIt(),
+      loginUseCase: getIt(),
+      confirmEmailUseCase: getIt(),
+      sendAuthCodeUseCase: getIt(),
+    ),
+  );
 }
 
 Future<void> _routes() async {

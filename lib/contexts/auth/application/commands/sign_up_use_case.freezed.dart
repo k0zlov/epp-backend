@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$SignUpParams {
 
- String get email; String get password;
+ String get displayName; String get email; String get password;
 /// Create a copy of SignUpParams
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +28,16 @@ $SignUpParamsCopyWith<SignUpParams> get copyWith => _$SignUpParamsCopyWithImpl<S
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is SignUpParams&&(identical(other.email, email) || other.email == email)&&(identical(other.password, password) || other.password == password));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is SignUpParams&&(identical(other.displayName, displayName) || other.displayName == displayName)&&(identical(other.email, email) || other.email == email)&&(identical(other.password, password) || other.password == password));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,email,password);
+int get hashCode => Object.hash(runtimeType,displayName,email,password);
 
 @override
 String toString() {
-  return 'SignUpParams(email: $email, password: $password)';
+  return 'SignUpParams(displayName: $displayName, email: $email, password: $password)';
 }
 
 
@@ -48,7 +48,7 @@ abstract mixin class $SignUpParamsCopyWith<$Res>  {
   factory $SignUpParamsCopyWith(SignUpParams value, $Res Function(SignUpParams) _then) = _$SignUpParamsCopyWithImpl;
 @useResult
 $Res call({
- String email, String password
+ String displayName, String email, String password
 });
 
 
@@ -65,9 +65,10 @@ class _$SignUpParamsCopyWithImpl<$Res>
 
 /// Create a copy of SignUpParams
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? email = null,Object? password = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? displayName = null,Object? email = null,Object? password = null,}) {
   return _then(_self.copyWith(
-email: null == email ? _self.email : email // ignore: cast_nullable_to_non_nullable
+displayName: null == displayName ? _self.displayName : displayName // ignore: cast_nullable_to_non_nullable
+as String,email: null == email ? _self.email : email // ignore: cast_nullable_to_non_nullable
 as String,password: null == password ? _self.password : password // ignore: cast_nullable_to_non_nullable
 as String,
   ));
@@ -154,10 +155,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String email,  String password)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String displayName,  String email,  String password)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _SignUpParams() when $default != null:
-return $default(_that.email,_that.password);case _:
+return $default(_that.displayName,_that.email,_that.password);case _:
   return orElse();
 
 }
@@ -175,10 +176,10 @@ return $default(_that.email,_that.password);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String email,  String password)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String displayName,  String email,  String password)  $default,) {final _that = this;
 switch (_that) {
 case _SignUpParams():
-return $default(_that.email,_that.password);case _:
+return $default(_that.displayName,_that.email,_that.password);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -195,10 +196,10 @@ return $default(_that.email,_that.password);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String email,  String password)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String displayName,  String email,  String password)?  $default,) {final _that = this;
 switch (_that) {
 case _SignUpParams() when $default != null:
-return $default(_that.email,_that.password);case _:
+return $default(_that.displayName,_that.email,_that.password);case _:
   return null;
 
 }
@@ -210,9 +211,10 @@ return $default(_that.email,_that.password);case _:
 @JsonSerializable()
 
 class _SignUpParams implements SignUpParams {
-  const _SignUpParams({required this.email, required this.password});
+  const _SignUpParams({required this.displayName, required this.email, required this.password});
   factory _SignUpParams.fromJson(Map<String, dynamic> json) => _$SignUpParamsFromJson(json);
 
+@override final  String displayName;
 @override final  String email;
 @override final  String password;
 
@@ -229,16 +231,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _SignUpParams&&(identical(other.email, email) || other.email == email)&&(identical(other.password, password) || other.password == password));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _SignUpParams&&(identical(other.displayName, displayName) || other.displayName == displayName)&&(identical(other.email, email) || other.email == email)&&(identical(other.password, password) || other.password == password));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,email,password);
+int get hashCode => Object.hash(runtimeType,displayName,email,password);
 
 @override
 String toString() {
-  return 'SignUpParams(email: $email, password: $password)';
+  return 'SignUpParams(displayName: $displayName, email: $email, password: $password)';
 }
 
 
@@ -249,7 +251,7 @@ abstract mixin class _$SignUpParamsCopyWith<$Res> implements $SignUpParamsCopyWi
   factory _$SignUpParamsCopyWith(_SignUpParams value, $Res Function(_SignUpParams) _then) = __$SignUpParamsCopyWithImpl;
 @override @useResult
 $Res call({
- String email, String password
+ String displayName, String email, String password
 });
 
 
@@ -266,9 +268,10 @@ class __$SignUpParamsCopyWithImpl<$Res>
 
 /// Create a copy of SignUpParams
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? email = null,Object? password = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? displayName = null,Object? email = null,Object? password = null,}) {
   return _then(_SignUpParams(
-email: null == email ? _self.email : email // ignore: cast_nullable_to_non_nullable
+displayName: null == displayName ? _self.displayName : displayName // ignore: cast_nullable_to_non_nullable
+as String,email: null == email ? _self.email : email // ignore: cast_nullable_to_non_nullable
 as String,password: null == password ? _self.password : password // ignore: cast_nullable_to_non_nullable
 as String,
   ));

@@ -27,6 +27,17 @@ class $UsersTable extends Users with TableInfo<$UsersTable, UserRow> {
         requiredDuringInsert: true,
         defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'),
       ).withConverter<Email>($UsersTable.$converteremail);
+  static const VerificationMeta _displayNameMeta = const VerificationMeta(
+    'displayName',
+  );
+  @override
+  late final GeneratedColumn<String> displayName = GeneratedColumn<String>(
+    'display_name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
   static const VerificationMeta _passwordHashMeta = const VerificationMeta(
     'passwordHash',
   );
@@ -90,6 +101,7 @@ class $UsersTable extends Users with TableInfo<$UsersTable, UserRow> {
   List<GeneratedColumn> get $columns => [
     id,
     email,
+    displayName,
     passwordHash,
     isVerified,
     deletedAt,
@@ -112,6 +124,17 @@ class $UsersTable extends Users with TableInfo<$UsersTable, UserRow> {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
     } else if (isInserting) {
       context.missing(_idMeta);
+    }
+    if (data.containsKey('display_name')) {
+      context.handle(
+        _displayNameMeta,
+        displayName.isAcceptableOrUnknown(
+          data['display_name']!,
+          _displayNameMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_displayNameMeta);
     }
     if (data.containsKey('password_hash')) {
       context.handle(
@@ -173,6 +196,10 @@ class $UsersTable extends Users with TableInfo<$UsersTable, UserRow> {
           data['${effectivePrefix}email'],
         )!,
       ),
+      displayName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}display_name'],
+      )!,
       passwordHash: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}password_hash'],
@@ -211,6 +238,7 @@ class $UsersTable extends Users with TableInfo<$UsersTable, UserRow> {
 class UserRow extends DataClass implements Insertable<UserRow> {
   final String id;
   final Email email;
+  final String displayName;
   final String passwordHash;
   final bool isVerified;
   final DateTime? deletedAt;
@@ -219,6 +247,7 @@ class UserRow extends DataClass implements Insertable<UserRow> {
   const UserRow({
     required this.id,
     required this.email,
+    required this.displayName,
     required this.passwordHash,
     required this.isVerified,
     this.deletedAt,
@@ -232,6 +261,7 @@ class UserRow extends DataClass implements Insertable<UserRow> {
     {
       map['email'] = Variable<String>($UsersTable.$converteremail.toSql(email));
     }
+    map['display_name'] = Variable<String>(displayName);
     map['password_hash'] = Variable<String>(passwordHash);
     map['is_verified'] = Variable<bool>(isVerified);
     if (!nullToAbsent || deletedAt != null) {
@@ -246,6 +276,7 @@ class UserRow extends DataClass implements Insertable<UserRow> {
     return UsersCompanion(
       id: Value(id),
       email: Value(email),
+      displayName: Value(displayName),
       passwordHash: Value(passwordHash),
       isVerified: Value(isVerified),
       deletedAt: deletedAt == null && nullToAbsent
@@ -264,6 +295,7 @@ class UserRow extends DataClass implements Insertable<UserRow> {
     return UserRow(
       id: serializer.fromJson<String>(json['id']),
       email: serializer.fromJson<Email>(json['email']),
+      displayName: serializer.fromJson<String>(json['displayName']),
       passwordHash: serializer.fromJson<String>(json['passwordHash']),
       isVerified: serializer.fromJson<bool>(json['isVerified']),
       deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
@@ -277,6 +309,7 @@ class UserRow extends DataClass implements Insertable<UserRow> {
     return <String, dynamic>{
       'id': serializer.toJson<String>(id),
       'email': serializer.toJson<Email>(email),
+      'displayName': serializer.toJson<String>(displayName),
       'passwordHash': serializer.toJson<String>(passwordHash),
       'isVerified': serializer.toJson<bool>(isVerified),
       'deletedAt': serializer.toJson<DateTime?>(deletedAt),
@@ -288,6 +321,7 @@ class UserRow extends DataClass implements Insertable<UserRow> {
   UserRow copyWith({
     String? id,
     Email? email,
+    String? displayName,
     String? passwordHash,
     bool? isVerified,
     Value<DateTime?> deletedAt = const Value.absent(),
@@ -296,6 +330,7 @@ class UserRow extends DataClass implements Insertable<UserRow> {
   }) => UserRow(
     id: id ?? this.id,
     email: email ?? this.email,
+    displayName: displayName ?? this.displayName,
     passwordHash: passwordHash ?? this.passwordHash,
     isVerified: isVerified ?? this.isVerified,
     deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
@@ -306,6 +341,9 @@ class UserRow extends DataClass implements Insertable<UserRow> {
     return UserRow(
       id: data.id.present ? data.id.value : this.id,
       email: data.email.present ? data.email.value : this.email,
+      displayName: data.displayName.present
+          ? data.displayName.value
+          : this.displayName,
       passwordHash: data.passwordHash.present
           ? data.passwordHash.value
           : this.passwordHash,
@@ -323,6 +361,7 @@ class UserRow extends DataClass implements Insertable<UserRow> {
     return (StringBuffer('UserRow(')
           ..write('id: $id, ')
           ..write('email: $email, ')
+          ..write('displayName: $displayName, ')
           ..write('passwordHash: $passwordHash, ')
           ..write('isVerified: $isVerified, ')
           ..write('deletedAt: $deletedAt, ')
@@ -336,6 +375,7 @@ class UserRow extends DataClass implements Insertable<UserRow> {
   int get hashCode => Object.hash(
     id,
     email,
+    displayName,
     passwordHash,
     isVerified,
     deletedAt,
@@ -348,6 +388,7 @@ class UserRow extends DataClass implements Insertable<UserRow> {
       (other is UserRow &&
           other.id == this.id &&
           other.email == this.email &&
+          other.displayName == this.displayName &&
           other.passwordHash == this.passwordHash &&
           other.isVerified == this.isVerified &&
           other.deletedAt == this.deletedAt &&
@@ -358,6 +399,7 @@ class UserRow extends DataClass implements Insertable<UserRow> {
 class UsersCompanion extends UpdateCompanion<UserRow> {
   final Value<String> id;
   final Value<Email> email;
+  final Value<String> displayName;
   final Value<String> passwordHash;
   final Value<bool> isVerified;
   final Value<DateTime?> deletedAt;
@@ -367,6 +409,7 @@ class UsersCompanion extends UpdateCompanion<UserRow> {
   const UsersCompanion({
     this.id = const Value.absent(),
     this.email = const Value.absent(),
+    this.displayName = const Value.absent(),
     this.passwordHash = const Value.absent(),
     this.isVerified = const Value.absent(),
     this.deletedAt = const Value.absent(),
@@ -377,6 +420,7 @@ class UsersCompanion extends UpdateCompanion<UserRow> {
   UsersCompanion.insert({
     required String id,
     required Email email,
+    required String displayName,
     required String passwordHash,
     required bool isVerified,
     this.deletedAt = const Value.absent(),
@@ -385,6 +429,7 @@ class UsersCompanion extends UpdateCompanion<UserRow> {
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        email = Value(email),
+       displayName = Value(displayName),
        passwordHash = Value(passwordHash),
        isVerified = Value(isVerified),
        createdAt = Value(createdAt),
@@ -392,6 +437,7 @@ class UsersCompanion extends UpdateCompanion<UserRow> {
   static Insertable<UserRow> custom({
     Expression<String>? id,
     Expression<String>? email,
+    Expression<String>? displayName,
     Expression<String>? passwordHash,
     Expression<bool>? isVerified,
     Expression<DateTime>? deletedAt,
@@ -402,6 +448,7 @@ class UsersCompanion extends UpdateCompanion<UserRow> {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (email != null) 'email': email,
+      if (displayName != null) 'display_name': displayName,
       if (passwordHash != null) 'password_hash': passwordHash,
       if (isVerified != null) 'is_verified': isVerified,
       if (deletedAt != null) 'deleted_at': deletedAt,
@@ -414,6 +461,7 @@ class UsersCompanion extends UpdateCompanion<UserRow> {
   UsersCompanion copyWith({
     Value<String>? id,
     Value<Email>? email,
+    Value<String>? displayName,
     Value<String>? passwordHash,
     Value<bool>? isVerified,
     Value<DateTime?>? deletedAt,
@@ -424,6 +472,7 @@ class UsersCompanion extends UpdateCompanion<UserRow> {
     return UsersCompanion(
       id: id ?? this.id,
       email: email ?? this.email,
+      displayName: displayName ?? this.displayName,
       passwordHash: passwordHash ?? this.passwordHash,
       isVerified: isVerified ?? this.isVerified,
       deletedAt: deletedAt ?? this.deletedAt,
@@ -443,6 +492,9 @@ class UsersCompanion extends UpdateCompanion<UserRow> {
       map['email'] = Variable<String>(
         $UsersTable.$converteremail.toSql(email.value),
       );
+    }
+    if (displayName.present) {
+      map['display_name'] = Variable<String>(displayName.value);
     }
     if (passwordHash.present) {
       map['password_hash'] = Variable<String>(passwordHash.value);
@@ -470,6 +522,7 @@ class UsersCompanion extends UpdateCompanion<UserRow> {
     return (StringBuffer('UsersCompanion(')
           ..write('id: $id, ')
           ..write('email: $email, ')
+          ..write('displayName: $displayName, ')
           ..write('passwordHash: $passwordHash, ')
           ..write('isVerified: $isVerified, ')
           ..write('deletedAt: $deletedAt, ')
@@ -999,12 +1052,12 @@ class AuthSessionsCompanion extends UpdateCompanion<AuthSessionRow> {
   }
 }
 
-class $AuthTokensTable extends AuthTokens
-    with TableInfo<$AuthTokensTable, AuthTokenRow> {
+class $AuthCodesTable extends AuthCodes
+    with TableInfo<$AuthCodesTable, AuthCodeRow> {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
-  $AuthTokensTable(this.attachedDatabase, [this._alias]);
+  $AuthCodesTable(this.attachedDatabase, [this._alias]);
   static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
   late final GeneratedColumn<String> id = GeneratedColumn<String>(
@@ -1026,26 +1079,56 @@ class $AuthTokensTable extends AuthTokens
       'REFERENCES users (id) ON DELETE CASCADE',
     ),
   );
-  static const VerificationMeta _tokenHashMeta = const VerificationMeta(
-    'tokenHash',
-  );
+  static const VerificationMeta _hashMeta = const VerificationMeta('hash');
   @override
-  late final GeneratedColumn<String> tokenHash = GeneratedColumn<String>(
-    'token_hash',
+  late final GeneratedColumn<String> hash = GeneratedColumn<String>(
+    'hash',
     aliasedName,
     false,
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
   @override
-  late final GeneratedColumnWithTypeConverter<AuthTokenType, String> type =
+  late final GeneratedColumnWithTypeConverter<AuthCodeType, String> type =
       GeneratedColumn<String>(
         'type',
         aliasedName,
         false,
         type: DriftSqlType.string,
         requiredDuringInsert: true,
-      ).withConverter<AuthTokenType>($AuthTokensTable.$convertertype);
+      ).withConverter<AuthCodeType>($AuthCodesTable.$convertertype);
+  static const VerificationMeta _attemptsMeta = const VerificationMeta(
+    'attempts',
+  );
+  @override
+  late final GeneratedColumn<int> attempts = GeneratedColumn<int>(
+    'attempts',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _usedAtMeta = const VerificationMeta('usedAt');
+  @override
+  late final GeneratedColumn<DateTime> usedAt = GeneratedColumn<DateTime>(
+    'used_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _invalidatedAtMeta = const VerificationMeta(
+    'invalidatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> invalidatedAt =
+      GeneratedColumn<DateTime>(
+        'invalidated_at',
+        aliasedName,
+        true,
+        type: DriftSqlType.dateTime,
+        requiredDuringInsert: false,
+      );
   static const VerificationMeta _expiresAtMeta = const VerificationMeta(
     'expiresAt',
   );
@@ -1083,8 +1166,11 @@ class $AuthTokensTable extends AuthTokens
   List<GeneratedColumn> get $columns => [
     id,
     userId,
-    tokenHash,
+    hash,
     type,
+    attempts,
+    usedAt,
+    invalidatedAt,
     expiresAt,
     createdAt,
     updatedAt,
@@ -1093,10 +1179,10 @@ class $AuthTokensTable extends AuthTokens
   String get aliasedName => _alias ?? actualTableName;
   @override
   String get actualTableName => $name;
-  static const String $name = 'auth_tokens';
+  static const String $name = 'auth_codes';
   @override
   VerificationContext validateIntegrity(
-    Insertable<AuthTokenRow> instance, {
+    Insertable<AuthCodeRow> instance, {
     bool isInserting = false,
   }) {
     final context = VerificationContext();
@@ -1114,13 +1200,36 @@ class $AuthTokensTable extends AuthTokens
     } else if (isInserting) {
       context.missing(_userIdMeta);
     }
-    if (data.containsKey('token_hash')) {
+    if (data.containsKey('hash')) {
       context.handle(
-        _tokenHashMeta,
-        tokenHash.isAcceptableOrUnknown(data['token_hash']!, _tokenHashMeta),
+        _hashMeta,
+        hash.isAcceptableOrUnknown(data['hash']!, _hashMeta),
       );
     } else if (isInserting) {
-      context.missing(_tokenHashMeta);
+      context.missing(_hashMeta);
+    }
+    if (data.containsKey('attempts')) {
+      context.handle(
+        _attemptsMeta,
+        attempts.isAcceptableOrUnknown(data['attempts']!, _attemptsMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_attemptsMeta);
+    }
+    if (data.containsKey('used_at')) {
+      context.handle(
+        _usedAtMeta,
+        usedAt.isAcceptableOrUnknown(data['used_at']!, _usedAtMeta),
+      );
+    }
+    if (data.containsKey('invalidated_at')) {
+      context.handle(
+        _invalidatedAtMeta,
+        invalidatedAt.isAcceptableOrUnknown(
+          data['invalidated_at']!,
+          _invalidatedAtMeta,
+        ),
+      );
     }
     if (data.containsKey('expires_at')) {
       context.handle(
@@ -1152,9 +1261,9 @@ class $AuthTokensTable extends AuthTokens
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
-  AuthTokenRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+  AuthCodeRow map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return AuthTokenRow(
+    return AuthCodeRow(
       id: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}id'],
@@ -1163,15 +1272,27 @@ class $AuthTokensTable extends AuthTokens
         DriftSqlType.string,
         data['${effectivePrefix}user_id'],
       )!,
-      tokenHash: attachedDatabase.typeMapping.read(
+      hash: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
-        data['${effectivePrefix}token_hash'],
+        data['${effectivePrefix}hash'],
       )!,
-      type: $AuthTokensTable.$convertertype.fromSql(
+      type: $AuthCodesTable.$convertertype.fromSql(
         attachedDatabase.typeMapping.read(
           DriftSqlType.string,
           data['${effectivePrefix}type'],
         )!,
+      ),
+      attempts: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}attempts'],
+      )!,
+      usedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}used_at'],
+      ),
+      invalidatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}invalidated_at'],
       ),
       expiresAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
@@ -1189,27 +1310,33 @@ class $AuthTokensTable extends AuthTokens
   }
 
   @override
-  $AuthTokensTable createAlias(String alias) {
-    return $AuthTokensTable(attachedDatabase, alias);
+  $AuthCodesTable createAlias(String alias) {
+    return $AuthCodesTable(attachedDatabase, alias);
   }
 
-  static JsonTypeConverter2<AuthTokenType, String, String> $convertertype =
-      const EnumNameConverter<AuthTokenType>(AuthTokenType.values);
+  static JsonTypeConverter2<AuthCodeType, String, String> $convertertype =
+      const EnumNameConverter<AuthCodeType>(AuthCodeType.values);
 }
 
-class AuthTokenRow extends DataClass implements Insertable<AuthTokenRow> {
+class AuthCodeRow extends DataClass implements Insertable<AuthCodeRow> {
   final String id;
   final String userId;
-  final String tokenHash;
-  final AuthTokenType type;
+  final String hash;
+  final AuthCodeType type;
+  final int attempts;
+  final DateTime? usedAt;
+  final DateTime? invalidatedAt;
   final DateTime expiresAt;
   final DateTime createdAt;
   final DateTime updatedAt;
-  const AuthTokenRow({
+  const AuthCodeRow({
     required this.id,
     required this.userId,
-    required this.tokenHash,
+    required this.hash,
     required this.type,
+    required this.attempts,
+    this.usedAt,
+    this.invalidatedAt,
     required this.expiresAt,
     required this.createdAt,
     required this.updatedAt,
@@ -1219,11 +1346,18 @@ class AuthTokenRow extends DataClass implements Insertable<AuthTokenRow> {
     final map = <String, Expression>{};
     map['id'] = Variable<String>(id);
     map['user_id'] = Variable<String>(userId);
-    map['token_hash'] = Variable<String>(tokenHash);
+    map['hash'] = Variable<String>(hash);
     {
       map['type'] = Variable<String>(
-        $AuthTokensTable.$convertertype.toSql(type),
+        $AuthCodesTable.$convertertype.toSql(type),
       );
+    }
+    map['attempts'] = Variable<int>(attempts);
+    if (!nullToAbsent || usedAt != null) {
+      map['used_at'] = Variable<DateTime>(usedAt);
+    }
+    if (!nullToAbsent || invalidatedAt != null) {
+      map['invalidated_at'] = Variable<DateTime>(invalidatedAt);
     }
     map['expires_at'] = Variable<DateTime>(expiresAt);
     map['created_at'] = Variable<DateTime>(createdAt);
@@ -1231,30 +1365,40 @@ class AuthTokenRow extends DataClass implements Insertable<AuthTokenRow> {
     return map;
   }
 
-  AuthTokensCompanion toCompanion(bool nullToAbsent) {
-    return AuthTokensCompanion(
+  AuthCodesCompanion toCompanion(bool nullToAbsent) {
+    return AuthCodesCompanion(
       id: Value(id),
       userId: Value(userId),
-      tokenHash: Value(tokenHash),
+      hash: Value(hash),
       type: Value(type),
+      attempts: Value(attempts),
+      usedAt: usedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(usedAt),
+      invalidatedAt: invalidatedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(invalidatedAt),
       expiresAt: Value(expiresAt),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
     );
   }
 
-  factory AuthTokenRow.fromJson(
+  factory AuthCodeRow.fromJson(
     Map<String, dynamic> json, {
     ValueSerializer? serializer,
   }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
-    return AuthTokenRow(
+    return AuthCodeRow(
       id: serializer.fromJson<String>(json['id']),
       userId: serializer.fromJson<String>(json['userId']),
-      tokenHash: serializer.fromJson<String>(json['tokenHash']),
-      type: $AuthTokensTable.$convertertype.fromJson(
+      hash: serializer.fromJson<String>(json['hash']),
+      type: $AuthCodesTable.$convertertype.fromJson(
         serializer.fromJson<String>(json['type']),
       ),
+      attempts: serializer.fromJson<int>(json['attempts']),
+      usedAt: serializer.fromJson<DateTime?>(json['usedAt']),
+      invalidatedAt: serializer.fromJson<DateTime?>(json['invalidatedAt']),
       expiresAt: serializer.fromJson<DateTime>(json['expiresAt']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
@@ -1266,39 +1410,55 @@ class AuthTokenRow extends DataClass implements Insertable<AuthTokenRow> {
     return <String, dynamic>{
       'id': serializer.toJson<String>(id),
       'userId': serializer.toJson<String>(userId),
-      'tokenHash': serializer.toJson<String>(tokenHash),
+      'hash': serializer.toJson<String>(hash),
       'type': serializer.toJson<String>(
-        $AuthTokensTable.$convertertype.toJson(type),
+        $AuthCodesTable.$convertertype.toJson(type),
       ),
+      'attempts': serializer.toJson<int>(attempts),
+      'usedAt': serializer.toJson<DateTime?>(usedAt),
+      'invalidatedAt': serializer.toJson<DateTime?>(invalidatedAt),
       'expiresAt': serializer.toJson<DateTime>(expiresAt),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
     };
   }
 
-  AuthTokenRow copyWith({
+  AuthCodeRow copyWith({
     String? id,
     String? userId,
-    String? tokenHash,
-    AuthTokenType? type,
+    String? hash,
+    AuthCodeType? type,
+    int? attempts,
+    Value<DateTime?> usedAt = const Value.absent(),
+    Value<DateTime?> invalidatedAt = const Value.absent(),
     DateTime? expiresAt,
     DateTime? createdAt,
     DateTime? updatedAt,
-  }) => AuthTokenRow(
+  }) => AuthCodeRow(
     id: id ?? this.id,
     userId: userId ?? this.userId,
-    tokenHash: tokenHash ?? this.tokenHash,
+    hash: hash ?? this.hash,
     type: type ?? this.type,
+    attempts: attempts ?? this.attempts,
+    usedAt: usedAt.present ? usedAt.value : this.usedAt,
+    invalidatedAt: invalidatedAt.present
+        ? invalidatedAt.value
+        : this.invalidatedAt,
     expiresAt: expiresAt ?? this.expiresAt,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
   );
-  AuthTokenRow copyWithCompanion(AuthTokensCompanion data) {
-    return AuthTokenRow(
+  AuthCodeRow copyWithCompanion(AuthCodesCompanion data) {
+    return AuthCodeRow(
       id: data.id.present ? data.id.value : this.id,
       userId: data.userId.present ? data.userId.value : this.userId,
-      tokenHash: data.tokenHash.present ? data.tokenHash.value : this.tokenHash,
+      hash: data.hash.present ? data.hash.value : this.hash,
       type: data.type.present ? data.type.value : this.type,
+      attempts: data.attempts.present ? data.attempts.value : this.attempts,
+      usedAt: data.usedAt.present ? data.usedAt.value : this.usedAt,
+      invalidatedAt: data.invalidatedAt.present
+          ? data.invalidatedAt.value
+          : this.invalidatedAt,
       expiresAt: data.expiresAt.present ? data.expiresAt.value : this.expiresAt,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
@@ -1307,11 +1467,14 @@ class AuthTokenRow extends DataClass implements Insertable<AuthTokenRow> {
 
   @override
   String toString() {
-    return (StringBuffer('AuthTokenRow(')
+    return (StringBuffer('AuthCodeRow(')
           ..write('id: $id, ')
           ..write('userId: $userId, ')
-          ..write('tokenHash: $tokenHash, ')
+          ..write('hash: $hash, ')
           ..write('type: $type, ')
+          ..write('attempts: $attempts, ')
+          ..write('usedAt: $usedAt, ')
+          ..write('invalidatedAt: $invalidatedAt, ')
           ..write('expiresAt: $expiresAt, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt')
@@ -1320,61 +1483,87 @@ class AuthTokenRow extends DataClass implements Insertable<AuthTokenRow> {
   }
 
   @override
-  int get hashCode =>
-      Object.hash(id, userId, tokenHash, type, expiresAt, createdAt, updatedAt);
+  int get hashCode => Object.hash(
+    id,
+    userId,
+    hash,
+    type,
+    attempts,
+    usedAt,
+    invalidatedAt,
+    expiresAt,
+    createdAt,
+    updatedAt,
+  );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      (other is AuthTokenRow &&
+      (other is AuthCodeRow &&
           other.id == this.id &&
           other.userId == this.userId &&
-          other.tokenHash == this.tokenHash &&
+          other.hash == this.hash &&
           other.type == this.type &&
+          other.attempts == this.attempts &&
+          other.usedAt == this.usedAt &&
+          other.invalidatedAt == this.invalidatedAt &&
           other.expiresAt == this.expiresAt &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt);
 }
 
-class AuthTokensCompanion extends UpdateCompanion<AuthTokenRow> {
+class AuthCodesCompanion extends UpdateCompanion<AuthCodeRow> {
   final Value<String> id;
   final Value<String> userId;
-  final Value<String> tokenHash;
-  final Value<AuthTokenType> type;
+  final Value<String> hash;
+  final Value<AuthCodeType> type;
+  final Value<int> attempts;
+  final Value<DateTime?> usedAt;
+  final Value<DateTime?> invalidatedAt;
   final Value<DateTime> expiresAt;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
   final Value<int> rowid;
-  const AuthTokensCompanion({
+  const AuthCodesCompanion({
     this.id = const Value.absent(),
     this.userId = const Value.absent(),
-    this.tokenHash = const Value.absent(),
+    this.hash = const Value.absent(),
     this.type = const Value.absent(),
+    this.attempts = const Value.absent(),
+    this.usedAt = const Value.absent(),
+    this.invalidatedAt = const Value.absent(),
     this.expiresAt = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.rowid = const Value.absent(),
   });
-  AuthTokensCompanion.insert({
+  AuthCodesCompanion.insert({
     required String id,
     required String userId,
-    required String tokenHash,
-    required AuthTokenType type,
+    required String hash,
+    required AuthCodeType type,
+    required int attempts,
+    this.usedAt = const Value.absent(),
+    this.invalidatedAt = const Value.absent(),
     required DateTime expiresAt,
     required DateTime createdAt,
     required DateTime updatedAt,
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        userId = Value(userId),
-       tokenHash = Value(tokenHash),
+       hash = Value(hash),
        type = Value(type),
+       attempts = Value(attempts),
        expiresAt = Value(expiresAt),
        createdAt = Value(createdAt),
        updatedAt = Value(updatedAt);
-  static Insertable<AuthTokenRow> custom({
+  static Insertable<AuthCodeRow> custom({
     Expression<String>? id,
     Expression<String>? userId,
-    Expression<String>? tokenHash,
+    Expression<String>? hash,
     Expression<String>? type,
+    Expression<int>? attempts,
+    Expression<DateTime>? usedAt,
+    Expression<DateTime>? invalidatedAt,
     Expression<DateTime>? expiresAt,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
@@ -1383,8 +1572,11 @@ class AuthTokensCompanion extends UpdateCompanion<AuthTokenRow> {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (userId != null) 'user_id': userId,
-      if (tokenHash != null) 'token_hash': tokenHash,
+      if (hash != null) 'hash': hash,
       if (type != null) 'type': type,
+      if (attempts != null) 'attempts': attempts,
+      if (usedAt != null) 'used_at': usedAt,
+      if (invalidatedAt != null) 'invalidated_at': invalidatedAt,
       if (expiresAt != null) 'expires_at': expiresAt,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
@@ -1392,21 +1584,27 @@ class AuthTokensCompanion extends UpdateCompanion<AuthTokenRow> {
     });
   }
 
-  AuthTokensCompanion copyWith({
+  AuthCodesCompanion copyWith({
     Value<String>? id,
     Value<String>? userId,
-    Value<String>? tokenHash,
-    Value<AuthTokenType>? type,
+    Value<String>? hash,
+    Value<AuthCodeType>? type,
+    Value<int>? attempts,
+    Value<DateTime?>? usedAt,
+    Value<DateTime?>? invalidatedAt,
     Value<DateTime>? expiresAt,
     Value<DateTime>? createdAt,
     Value<DateTime>? updatedAt,
     Value<int>? rowid,
   }) {
-    return AuthTokensCompanion(
+    return AuthCodesCompanion(
       id: id ?? this.id,
       userId: userId ?? this.userId,
-      tokenHash: tokenHash ?? this.tokenHash,
+      hash: hash ?? this.hash,
       type: type ?? this.type,
+      attempts: attempts ?? this.attempts,
+      usedAt: usedAt ?? this.usedAt,
+      invalidatedAt: invalidatedAt ?? this.invalidatedAt,
       expiresAt: expiresAt ?? this.expiresAt,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
@@ -1423,13 +1621,22 @@ class AuthTokensCompanion extends UpdateCompanion<AuthTokenRow> {
     if (userId.present) {
       map['user_id'] = Variable<String>(userId.value);
     }
-    if (tokenHash.present) {
-      map['token_hash'] = Variable<String>(tokenHash.value);
+    if (hash.present) {
+      map['hash'] = Variable<String>(hash.value);
     }
     if (type.present) {
       map['type'] = Variable<String>(
-        $AuthTokensTable.$convertertype.toSql(type.value),
+        $AuthCodesTable.$convertertype.toSql(type.value),
       );
+    }
+    if (attempts.present) {
+      map['attempts'] = Variable<int>(attempts.value);
+    }
+    if (usedAt.present) {
+      map['used_at'] = Variable<DateTime>(usedAt.value);
+    }
+    if (invalidatedAt.present) {
+      map['invalidated_at'] = Variable<DateTime>(invalidatedAt.value);
     }
     if (expiresAt.present) {
       map['expires_at'] = Variable<DateTime>(expiresAt.value);
@@ -1448,11 +1655,14 @@ class AuthTokensCompanion extends UpdateCompanion<AuthTokenRow> {
 
   @override
   String toString() {
-    return (StringBuffer('AuthTokensCompanion(')
+    return (StringBuffer('AuthCodesCompanion(')
           ..write('id: $id, ')
           ..write('userId: $userId, ')
-          ..write('tokenHash: $tokenHash, ')
+          ..write('hash: $hash, ')
           ..write('type: $type, ')
+          ..write('attempts: $attempts, ')
+          ..write('usedAt: $usedAt, ')
+          ..write('invalidatedAt: $invalidatedAt, ')
           ..write('expiresAt: $expiresAt, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
@@ -1467,7 +1677,7 @@ abstract class _$Database extends GeneratedDatabase {
   $DatabaseManager get managers => $DatabaseManager(this);
   late final $UsersTable users = $UsersTable(this);
   late final $AuthSessionsTable authSessions = $AuthSessionsTable(this);
-  late final $AuthTokensTable authTokens = $AuthTokensTable(this);
+  late final $AuthCodesTable authCodes = $AuthCodesTable(this);
   late final Index sessionsUserIdIdx = Index.byDialect('sessions_user_id_idx', {
     SqlDialect.sqlite:
         'CREATE INDEX sessions_user_id_idx ON auth_sessions (user_id)',
@@ -1481,17 +1691,14 @@ abstract class _$Database extends GeneratedDatabase {
     SqlDialect.postgres:
         'CREATE INDEX sessions_refresh_token_idx ON auth_sessions (refresh_token)',
   });
-  late final Index tokensUserIdIdx = Index.byDialect('tokens_user_id_idx', {
-    SqlDialect.sqlite:
-        'CREATE INDEX tokens_user_id_idx ON auth_tokens (user_id)',
+  late final Index codesUserIdIdx = Index.byDialect('codes_user_id_idx', {
+    SqlDialect.sqlite: 'CREATE INDEX codes_user_id_idx ON auth_codes (user_id)',
     SqlDialect.postgres:
-        'CREATE INDEX tokens_user_id_idx ON auth_tokens (user_id)',
+        'CREATE INDEX codes_user_id_idx ON auth_codes (user_id)',
   });
-  late final Index tokensHashIdx = Index.byDialect('tokens_hash_idx', {
-    SqlDialect.sqlite:
-        'CREATE INDEX tokens_hash_idx ON auth_tokens (token_hash)',
-    SqlDialect.postgres:
-        'CREATE INDEX tokens_hash_idx ON auth_tokens (token_hash)',
+  late final Index codesHashIdx = Index.byDialect('codes_hash_idx', {
+    SqlDialect.sqlite: 'CREATE INDEX codes_hash_idx ON auth_codes (hash)',
+    SqlDialect.postgres: 'CREATE INDEX codes_hash_idx ON auth_codes (hash)',
   });
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
@@ -1500,11 +1707,11 @@ abstract class _$Database extends GeneratedDatabase {
   List<DatabaseSchemaEntity> get allSchemaEntities => [
     users,
     authSessions,
-    authTokens,
+    authCodes,
     sessionsUserIdIdx,
     sessionsRefreshTokenIdx,
-    tokensUserIdIdx,
-    tokensHashIdx,
+    codesUserIdIdx,
+    codesHashIdx,
   ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
@@ -1520,7 +1727,7 @@ abstract class _$Database extends GeneratedDatabase {
         'users',
         limitUpdateKind: UpdateKind.delete,
       ),
-      result: [TableUpdate('auth_tokens', kind: UpdateKind.delete)],
+      result: [TableUpdate('auth_codes', kind: UpdateKind.delete)],
     ),
   ]);
 }
@@ -1529,6 +1736,7 @@ typedef $$UsersTableCreateCompanionBuilder =
     UsersCompanion Function({
       required String id,
       required Email email,
+      required String displayName,
       required String passwordHash,
       required bool isVerified,
       Value<DateTime?> deletedAt,
@@ -1540,6 +1748,7 @@ typedef $$UsersTableUpdateCompanionBuilder =
     UsersCompanion Function({
       Value<String> id,
       Value<Email> email,
+      Value<String> displayName,
       Value<String> passwordHash,
       Value<bool> isVerified,
       Value<DateTime?> deletedAt,
@@ -1570,19 +1779,19 @@ final class $$UsersTableReferences
     );
   }
 
-  static MultiTypedResultKey<$AuthTokensTable, List<AuthTokenRow>>
-  _authTokensRefsTable(_$Database db) => MultiTypedResultKey.fromTable(
-    db.authTokens,
-    aliasName: $_aliasNameGenerator(db.users.id, db.authTokens.userId),
+  static MultiTypedResultKey<$AuthCodesTable, List<AuthCodeRow>>
+  _authCodesRefsTable(_$Database db) => MultiTypedResultKey.fromTable(
+    db.authCodes,
+    aliasName: $_aliasNameGenerator(db.users.id, db.authCodes.userId),
   );
 
-  $$AuthTokensTableProcessedTableManager get authTokensRefs {
-    final manager = $$AuthTokensTableTableManager(
+  $$AuthCodesTableProcessedTableManager get authCodesRefs {
+    final manager = $$AuthCodesTableTableManager(
       $_db,
-      $_db.authTokens,
+      $_db.authCodes,
     ).filter((f) => f.userId.id.sqlEquals($_itemColumn<String>('id')!));
 
-    final cache = $_typedResult.readTableOrNull(_authTokensRefsTable($_db));
+    final cache = $_typedResult.readTableOrNull(_authCodesRefsTable($_db));
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: cache),
     );
@@ -1607,6 +1816,11 @@ class $$UsersTableFilterComposer extends Composer<_$Database, $UsersTable> {
         column: $table.email,
         builder: (column) => ColumnWithTypeConverterFilters(column),
       );
+
+  ColumnFilters<String> get displayName => $composableBuilder(
+    column: $table.displayName,
+    builder: (column) => ColumnFilters(column),
+  );
 
   ColumnFilters<String> get passwordHash => $composableBuilder(
     column: $table.passwordHash,
@@ -1658,22 +1872,22 @@ class $$UsersTableFilterComposer extends Composer<_$Database, $UsersTable> {
     return f(composer);
   }
 
-  Expression<bool> authTokensRefs(
-    Expression<bool> Function($$AuthTokensTableFilterComposer f) f,
+  Expression<bool> authCodesRefs(
+    Expression<bool> Function($$AuthCodesTableFilterComposer f) f,
   ) {
-    final $$AuthTokensTableFilterComposer composer = $composerBuilder(
+    final $$AuthCodesTableFilterComposer composer = $composerBuilder(
       composer: this,
       getCurrentColumn: (t) => t.id,
-      referencedTable: $db.authTokens,
+      referencedTable: $db.authCodes,
       getReferencedColumn: (t) => t.userId,
       builder:
           (
             joinBuilder, {
             $addJoinBuilderToRootComposer,
             $removeJoinBuilderFromRootComposer,
-          }) => $$AuthTokensTableFilterComposer(
+          }) => $$AuthCodesTableFilterComposer(
             $db: $db,
-            $table: $db.authTokens,
+            $table: $db.authCodes,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -1699,6 +1913,11 @@ class $$UsersTableOrderingComposer extends Composer<_$Database, $UsersTable> {
 
   ColumnOrderings<String> get email => $composableBuilder(
     column: $table.email,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get displayName => $composableBuilder(
+    column: $table.displayName,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -1741,6 +1960,11 @@ class $$UsersTableAnnotationComposer extends Composer<_$Database, $UsersTable> {
 
   GeneratedColumnWithTypeConverter<Email, String> get email =>
       $composableBuilder(column: $table.email, builder: (column) => column);
+
+  GeneratedColumn<String> get displayName => $composableBuilder(
+    column: $table.displayName,
+    builder: (column) => column,
+  );
 
   GeneratedColumn<String> get passwordHash => $composableBuilder(
     column: $table.passwordHash,
@@ -1786,22 +2010,22 @@ class $$UsersTableAnnotationComposer extends Composer<_$Database, $UsersTable> {
     return f(composer);
   }
 
-  Expression<T> authTokensRefs<T extends Object>(
-    Expression<T> Function($$AuthTokensTableAnnotationComposer a) f,
+  Expression<T> authCodesRefs<T extends Object>(
+    Expression<T> Function($$AuthCodesTableAnnotationComposer a) f,
   ) {
-    final $$AuthTokensTableAnnotationComposer composer = $composerBuilder(
+    final $$AuthCodesTableAnnotationComposer composer = $composerBuilder(
       composer: this,
       getCurrentColumn: (t) => t.id,
-      referencedTable: $db.authTokens,
+      referencedTable: $db.authCodes,
       getReferencedColumn: (t) => t.userId,
       builder:
           (
             joinBuilder, {
             $addJoinBuilderToRootComposer,
             $removeJoinBuilderFromRootComposer,
-          }) => $$AuthTokensTableAnnotationComposer(
+          }) => $$AuthCodesTableAnnotationComposer(
             $db: $db,
-            $table: $db.authTokens,
+            $table: $db.authCodes,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -1825,7 +2049,7 @@ class $$UsersTableTableManager
           $$UsersTableUpdateCompanionBuilder,
           (UserRow, $$UsersTableReferences),
           UserRow,
-          PrefetchHooks Function({bool authSessionsRefs, bool authTokensRefs})
+          PrefetchHooks Function({bool authSessionsRefs, bool authCodesRefs})
         > {
   $$UsersTableTableManager(_$Database db, $UsersTable table)
     : super(
@@ -1842,6 +2066,7 @@ class $$UsersTableTableManager
               ({
                 Value<String> id = const Value.absent(),
                 Value<Email> email = const Value.absent(),
+                Value<String> displayName = const Value.absent(),
                 Value<String> passwordHash = const Value.absent(),
                 Value<bool> isVerified = const Value.absent(),
                 Value<DateTime?> deletedAt = const Value.absent(),
@@ -1851,6 +2076,7 @@ class $$UsersTableTableManager
               }) => UsersCompanion(
                 id: id,
                 email: email,
+                displayName: displayName,
                 passwordHash: passwordHash,
                 isVerified: isVerified,
                 deletedAt: deletedAt,
@@ -1862,6 +2088,7 @@ class $$UsersTableTableManager
               ({
                 required String id,
                 required Email email,
+                required String displayName,
                 required String passwordHash,
                 required bool isVerified,
                 Value<DateTime?> deletedAt = const Value.absent(),
@@ -1871,6 +2098,7 @@ class $$UsersTableTableManager
               }) => UsersCompanion.insert(
                 id: id,
                 email: email,
+                displayName: displayName,
                 passwordHash: passwordHash,
                 isVerified: isVerified,
                 deletedAt: deletedAt,
@@ -1885,12 +2113,12 @@ class $$UsersTableTableManager
               )
               .toList(),
           prefetchHooksCallback:
-              ({authSessionsRefs = false, authTokensRefs = false}) {
+              ({authSessionsRefs = false, authCodesRefs = false}) {
                 return PrefetchHooks(
                   db: db,
                   explicitlyWatchedTables: [
                     if (authSessionsRefs) db.authSessions,
-                    if (authTokensRefs) db.authTokens,
+                    if (authCodesRefs) db.authCodes,
                   ],
                   addJoins: null,
                   getPrefetchedDataCallback: (items) async {
@@ -1916,21 +2144,21 @@ class $$UsersTableTableManager
                               ),
                           typedResults: items,
                         ),
-                      if (authTokensRefs)
+                      if (authCodesRefs)
                         await $_getPrefetchedData<
                           UserRow,
                           $UsersTable,
-                          AuthTokenRow
+                          AuthCodeRow
                         >(
                           currentTable: table,
                           referencedTable: $$UsersTableReferences
-                              ._authTokensRefsTable(db),
+                              ._authCodesRefsTable(db),
                           managerFromTypedResult: (p0) =>
                               $$UsersTableReferences(
                                 db,
                                 table,
                                 p0,
-                              ).authTokensRefs,
+                              ).authCodesRefs,
                           referencedItemsForCurrentItem:
                               (item, referencedItems) => referencedItems.where(
                                 (e) => e.userId == item.id,
@@ -1957,7 +2185,7 @@ typedef $$UsersTableProcessedTableManager =
       $$UsersTableUpdateCompanionBuilder,
       (UserRow, $$UsersTableReferences),
       UserRow,
-      PrefetchHooks Function({bool authSessionsRefs, bool authTokensRefs})
+      PrefetchHooks Function({bool authSessionsRefs, bool authCodesRefs})
     >;
 typedef $$AuthSessionsTableCreateCompanionBuilder =
     AuthSessionsCompanion Function({
@@ -2336,35 +2564,41 @@ typedef $$AuthSessionsTableProcessedTableManager =
       AuthSessionRow,
       PrefetchHooks Function({bool userId})
     >;
-typedef $$AuthTokensTableCreateCompanionBuilder =
-    AuthTokensCompanion Function({
+typedef $$AuthCodesTableCreateCompanionBuilder =
+    AuthCodesCompanion Function({
       required String id,
       required String userId,
-      required String tokenHash,
-      required AuthTokenType type,
+      required String hash,
+      required AuthCodeType type,
+      required int attempts,
+      Value<DateTime?> usedAt,
+      Value<DateTime?> invalidatedAt,
       required DateTime expiresAt,
       required DateTime createdAt,
       required DateTime updatedAt,
       Value<int> rowid,
     });
-typedef $$AuthTokensTableUpdateCompanionBuilder =
-    AuthTokensCompanion Function({
+typedef $$AuthCodesTableUpdateCompanionBuilder =
+    AuthCodesCompanion Function({
       Value<String> id,
       Value<String> userId,
-      Value<String> tokenHash,
-      Value<AuthTokenType> type,
+      Value<String> hash,
+      Value<AuthCodeType> type,
+      Value<int> attempts,
+      Value<DateTime?> usedAt,
+      Value<DateTime?> invalidatedAt,
       Value<DateTime> expiresAt,
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
       Value<int> rowid,
     });
 
-final class $$AuthTokensTableReferences
-    extends BaseReferences<_$Database, $AuthTokensTable, AuthTokenRow> {
-  $$AuthTokensTableReferences(super.$_db, super.$_table, super.$_typedResult);
+final class $$AuthCodesTableReferences
+    extends BaseReferences<_$Database, $AuthCodesTable, AuthCodeRow> {
+  $$AuthCodesTableReferences(super.$_db, super.$_table, super.$_typedResult);
 
   static $UsersTable _userIdTable(_$Database db) => db.users.createAlias(
-    $_aliasNameGenerator(db.authTokens.userId, db.users.id),
+    $_aliasNameGenerator(db.authCodes.userId, db.users.id),
   );
 
   $$UsersTableProcessedTableManager get userId {
@@ -2382,9 +2616,9 @@ final class $$AuthTokensTableReferences
   }
 }
 
-class $$AuthTokensTableFilterComposer
-    extends Composer<_$Database, $AuthTokensTable> {
-  $$AuthTokensTableFilterComposer({
+class $$AuthCodesTableFilterComposer
+    extends Composer<_$Database, $AuthCodesTable> {
+  $$AuthCodesTableFilterComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
@@ -2396,15 +2630,30 @@ class $$AuthTokensTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<String> get tokenHash => $composableBuilder(
-    column: $table.tokenHash,
+  ColumnFilters<String> get hash => $composableBuilder(
+    column: $table.hash,
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnWithTypeConverterFilters<AuthTokenType, AuthTokenType, String>
-  get type => $composableBuilder(
-    column: $table.type,
-    builder: (column) => ColumnWithTypeConverterFilters(column),
+  ColumnWithTypeConverterFilters<AuthCodeType, AuthCodeType, String> get type =>
+      $composableBuilder(
+        column: $table.type,
+        builder: (column) => ColumnWithTypeConverterFilters(column),
+      );
+
+  ColumnFilters<int> get attempts => $composableBuilder(
+    column: $table.attempts,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get usedAt => $composableBuilder(
+    column: $table.usedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get invalidatedAt => $composableBuilder(
+    column: $table.invalidatedAt,
+    builder: (column) => ColumnFilters(column),
   );
 
   ColumnFilters<DateTime> get expiresAt => $composableBuilder(
@@ -2446,9 +2695,9 @@ class $$AuthTokensTableFilterComposer
   }
 }
 
-class $$AuthTokensTableOrderingComposer
-    extends Composer<_$Database, $AuthTokensTable> {
-  $$AuthTokensTableOrderingComposer({
+class $$AuthCodesTableOrderingComposer
+    extends Composer<_$Database, $AuthCodesTable> {
+  $$AuthCodesTableOrderingComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
@@ -2460,13 +2709,28 @@ class $$AuthTokensTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<String> get tokenHash => $composableBuilder(
-    column: $table.tokenHash,
+  ColumnOrderings<String> get hash => $composableBuilder(
+    column: $table.hash,
     builder: (column) => ColumnOrderings(column),
   );
 
   ColumnOrderings<String> get type => $composableBuilder(
     column: $table.type,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get attempts => $composableBuilder(
+    column: $table.attempts,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get usedAt => $composableBuilder(
+    column: $table.usedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get invalidatedAt => $composableBuilder(
+    column: $table.invalidatedAt,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -2509,9 +2773,9 @@ class $$AuthTokensTableOrderingComposer
   }
 }
 
-class $$AuthTokensTableAnnotationComposer
-    extends Composer<_$Database, $AuthTokensTable> {
-  $$AuthTokensTableAnnotationComposer({
+class $$AuthCodesTableAnnotationComposer
+    extends Composer<_$Database, $AuthCodesTable> {
+  $$AuthCodesTableAnnotationComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
@@ -2521,11 +2785,22 @@ class $$AuthTokensTableAnnotationComposer
   GeneratedColumn<String> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
 
-  GeneratedColumn<String> get tokenHash =>
-      $composableBuilder(column: $table.tokenHash, builder: (column) => column);
+  GeneratedColumn<String> get hash =>
+      $composableBuilder(column: $table.hash, builder: (column) => column);
 
-  GeneratedColumnWithTypeConverter<AuthTokenType, String> get type =>
+  GeneratedColumnWithTypeConverter<AuthCodeType, String> get type =>
       $composableBuilder(column: $table.type, builder: (column) => column);
+
+  GeneratedColumn<int> get attempts =>
+      $composableBuilder(column: $table.attempts, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get usedAt =>
+      $composableBuilder(column: $table.usedAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get invalidatedAt => $composableBuilder(
+    column: $table.invalidatedAt,
+    builder: (column) => column,
+  );
 
   GeneratedColumn<DateTime> get expiresAt =>
       $composableBuilder(column: $table.expiresAt, builder: (column) => column);
@@ -2560,47 +2835,53 @@ class $$AuthTokensTableAnnotationComposer
   }
 }
 
-class $$AuthTokensTableTableManager
+class $$AuthCodesTableTableManager
     extends
         RootTableManager<
           _$Database,
-          $AuthTokensTable,
-          AuthTokenRow,
-          $$AuthTokensTableFilterComposer,
-          $$AuthTokensTableOrderingComposer,
-          $$AuthTokensTableAnnotationComposer,
-          $$AuthTokensTableCreateCompanionBuilder,
-          $$AuthTokensTableUpdateCompanionBuilder,
-          (AuthTokenRow, $$AuthTokensTableReferences),
-          AuthTokenRow,
+          $AuthCodesTable,
+          AuthCodeRow,
+          $$AuthCodesTableFilterComposer,
+          $$AuthCodesTableOrderingComposer,
+          $$AuthCodesTableAnnotationComposer,
+          $$AuthCodesTableCreateCompanionBuilder,
+          $$AuthCodesTableUpdateCompanionBuilder,
+          (AuthCodeRow, $$AuthCodesTableReferences),
+          AuthCodeRow,
           PrefetchHooks Function({bool userId})
         > {
-  $$AuthTokensTableTableManager(_$Database db, $AuthTokensTable table)
+  $$AuthCodesTableTableManager(_$Database db, $AuthCodesTable table)
     : super(
         TableManagerState(
           db: db,
           table: table,
           createFilteringComposer: () =>
-              $$AuthTokensTableFilterComposer($db: db, $table: table),
+              $$AuthCodesTableFilterComposer($db: db, $table: table),
           createOrderingComposer: () =>
-              $$AuthTokensTableOrderingComposer($db: db, $table: table),
+              $$AuthCodesTableOrderingComposer($db: db, $table: table),
           createComputedFieldComposer: () =>
-              $$AuthTokensTableAnnotationComposer($db: db, $table: table),
+              $$AuthCodesTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback:
               ({
                 Value<String> id = const Value.absent(),
                 Value<String> userId = const Value.absent(),
-                Value<String> tokenHash = const Value.absent(),
-                Value<AuthTokenType> type = const Value.absent(),
+                Value<String> hash = const Value.absent(),
+                Value<AuthCodeType> type = const Value.absent(),
+                Value<int> attempts = const Value.absent(),
+                Value<DateTime?> usedAt = const Value.absent(),
+                Value<DateTime?> invalidatedAt = const Value.absent(),
                 Value<DateTime> expiresAt = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
-              }) => AuthTokensCompanion(
+              }) => AuthCodesCompanion(
                 id: id,
                 userId: userId,
-                tokenHash: tokenHash,
+                hash: hash,
                 type: type,
+                attempts: attempts,
+                usedAt: usedAt,
+                invalidatedAt: invalidatedAt,
                 expiresAt: expiresAt,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
@@ -2610,17 +2891,23 @@ class $$AuthTokensTableTableManager
               ({
                 required String id,
                 required String userId,
-                required String tokenHash,
-                required AuthTokenType type,
+                required String hash,
+                required AuthCodeType type,
+                required int attempts,
+                Value<DateTime?> usedAt = const Value.absent(),
+                Value<DateTime?> invalidatedAt = const Value.absent(),
                 required DateTime expiresAt,
                 required DateTime createdAt,
                 required DateTime updatedAt,
                 Value<int> rowid = const Value.absent(),
-              }) => AuthTokensCompanion.insert(
+              }) => AuthCodesCompanion.insert(
                 id: id,
                 userId: userId,
-                tokenHash: tokenHash,
+                hash: hash,
                 type: type,
+                attempts: attempts,
+                usedAt: usedAt,
+                invalidatedAt: invalidatedAt,
                 expiresAt: expiresAt,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
@@ -2630,7 +2917,7 @@ class $$AuthTokensTableTableManager
               .map(
                 (e) => (
                   e.readTable(table),
-                  $$AuthTokensTableReferences(db, table, e),
+                  $$AuthCodesTableReferences(db, table, e),
                 ),
               )
               .toList(),
@@ -2659,9 +2946,9 @@ class $$AuthTokensTableTableManager
                           state.withJoin(
                                 currentTable: table,
                                 currentColumn: table.userId,
-                                referencedTable: $$AuthTokensTableReferences
+                                referencedTable: $$AuthCodesTableReferences
                                     ._userIdTable(db),
-                                referencedColumn: $$AuthTokensTableReferences
+                                referencedColumn: $$AuthCodesTableReferences
                                     ._userIdTable(db)
                                     .id,
                               )
@@ -2679,18 +2966,18 @@ class $$AuthTokensTableTableManager
       );
 }
 
-typedef $$AuthTokensTableProcessedTableManager =
+typedef $$AuthCodesTableProcessedTableManager =
     ProcessedTableManager<
       _$Database,
-      $AuthTokensTable,
-      AuthTokenRow,
-      $$AuthTokensTableFilterComposer,
-      $$AuthTokensTableOrderingComposer,
-      $$AuthTokensTableAnnotationComposer,
-      $$AuthTokensTableCreateCompanionBuilder,
-      $$AuthTokensTableUpdateCompanionBuilder,
-      (AuthTokenRow, $$AuthTokensTableReferences),
-      AuthTokenRow,
+      $AuthCodesTable,
+      AuthCodeRow,
+      $$AuthCodesTableFilterComposer,
+      $$AuthCodesTableOrderingComposer,
+      $$AuthCodesTableAnnotationComposer,
+      $$AuthCodesTableCreateCompanionBuilder,
+      $$AuthCodesTableUpdateCompanionBuilder,
+      (AuthCodeRow, $$AuthCodesTableReferences),
+      AuthCodeRow,
       PrefetchHooks Function({bool userId})
     >;
 
@@ -2701,6 +2988,6 @@ class $DatabaseManager {
       $$UsersTableTableManager(_db, _db.users);
   $$AuthSessionsTableTableManager get authSessions =>
       $$AuthSessionsTableTableManager(_db, _db.authSessions);
-  $$AuthTokensTableTableManager get authTokens =>
-      $$AuthTokensTableTableManager(_db, _db.authTokens);
+  $$AuthCodesTableTableManager get authCodes =>
+      $$AuthCodesTableTableManager(_db, _db.authCodes);
 }

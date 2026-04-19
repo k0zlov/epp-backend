@@ -18,6 +18,40 @@ class AuthRoute extends Route {
       body: [
         Field<String>('email'),
         Field<String>('password'),
+        Field<String>('displayName'),
+      ],
+    );
+  }
+
+  Endpoint get login {
+    return Endpoint.post(
+      path: 'login',
+      handler: controller.login,
+      body: [
+        Field<String>('email'),
+        Field<String>('password'),
+      ],
+    );
+  }
+
+  Endpoint get confirmEmail {
+    return Endpoint.post(
+      path: 'confirm-email',
+      handler: controller.confirmEmail,
+      body: [
+        Field<String>('email'),
+        Field<String>('code'),
+      ],
+    );
+  }
+
+  Endpoint get sendAuthCode {
+    return Endpoint.post(
+      path: 'send-code',
+      handler: controller.sendAuthCode,
+      body: [
+        Field<String>('email'),
+        Field<String>('type'),
       ],
     );
   }

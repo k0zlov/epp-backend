@@ -8,7 +8,7 @@ part 'database.g.dart';
   tables: [
     Users,
     AuthSessions,
-    AuthTokens,
+    AuthCodes,
   ],
 )
 class Database extends _$Database {

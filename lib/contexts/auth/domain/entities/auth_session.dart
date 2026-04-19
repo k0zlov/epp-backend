@@ -1,4 +1,4 @@
-import 'package:epp_backend/shared/domain/base/entity.dart';
+import 'package:epp_backend/shared/domain/domain.dart';
 
 class AuthSession extends Entity {
   AuthSession({
@@ -10,6 +10,25 @@ class AuthSession extends Entity {
     required super.updatedAt,
     required super.createdAt,
   });
+
+  static Result<AuthSession> create({
+    required String refreshToken,
+    required String ipAddress,
+    required String userAgent,
+    required DateTime expiresAt,
+  }) {
+    final AuthSession session = AuthSession(
+      expiresAt: expiresAt,
+      refreshToken: refreshToken,
+      ipAddress: ipAddress,
+      userAgent: userAgent,
+      id: null,
+      updatedAt: null,
+      createdAt: null,
+    );
+
+    return Success(session);
+  }
 
   final DateTime expiresAt;
   final String refreshToken;

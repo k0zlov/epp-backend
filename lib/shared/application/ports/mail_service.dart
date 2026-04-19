@@ -1,17 +1,17 @@
+import 'package:epp_backend/shared/application/base/mail_template.dart';
+
 abstract interface class MailService {
   Future<void> send({
     required List<String> to,
     required String subject,
     String? text,
     String? html,
-    String from = 'no-reply',
+    String from,
   });
 
   Future<void> sendTemplate({
     required List<String> to,
-    required String subject,
-    required String templateName,
-    Map<String, dynamic> vars = const {},
-    String from = 'no-reply',
+    required MailTemplate template,
+    String from,
   });
 }

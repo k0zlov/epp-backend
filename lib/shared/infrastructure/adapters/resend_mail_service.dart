@@ -1,13 +1,12 @@
-import 'dart:io';
-
 import 'package:dart_resend/dart_resend.dart';
+import 'package:epp_backend/shared/application/base/mail_template.dart';
 import 'package:epp_backend/shared/application/ports/mail_service.dart';
+import 'package:epp_backend/shared/infrastructure/mixins/mail_template_loader_mixin.dart';
 import 'package:mustache_template/mustache.dart';
-import 'package:path/path.dart' as path;
 
-class ResendMailService implements MailService {
+class ResendMailService with MailTemplateLoaderMixin implements MailService {
   const ResendMailService({
-    required this.templatesPath,
+    required this.templatesFolderPath,
     required this.domainTitle,
     required this.client,
   });
@@ -15,17 +14,7 @@ class ResendMailService implements MailService {
   final ResendClient client;
 
   final String domainTitle;
-  final String templatesPath;
-
-  Future<String> _loadTemplate(String name) async {
-    final file = File(path.join(templatesPath, '$name.html'));
-
-    if (!file.existsSync()) {
-      throw Exception('Template $name not found at ${file.path}');
-    }
-
-    return file.readAsString();
-  }
+  final String templatesFolderPath;
 
   @override
   Future<void> send({
@@ -47,15 +36,16 @@ class ResendMailService implements MailService {
   @override
   Future<void> sendTemplate({
     required List<String> to,
-    required String subject,
-    required String templateName,
-    Map<String, dynamic> vars = const {},
-    String? from,
+    required MailTemplate template,
+    String from = 'no-reply',
   }) async {
-    final String source = await _loadTemplate(templateName);
+    final Template t = await loadTemplate(
+      templateName: template.templateName,
+      templatesFolderPath: templatesFolderPath,
+    );
 
-    final String html = Template(source).renderString(vars);
+    final String html = t.renderString({...template.vars, 'subject': template.subject});
 
-    return send(to: to, subject: subject, from: from, html: html);
+    return send(to: to, subject: template.subject, from: from, html: html);
   }
 }

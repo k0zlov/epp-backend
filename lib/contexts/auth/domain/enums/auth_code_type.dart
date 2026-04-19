@@ -1,0 +1,1 @@
+enum AuthCodeType { emailVerification, passwordReset }
