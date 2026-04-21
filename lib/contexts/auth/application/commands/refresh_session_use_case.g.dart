@@ -9,9 +9,7 @@ part of 'refresh_session_use_case.dart';
 _RefreshSessionParams _$RefreshSessionParamsFromJson(
   Map<String, dynamic> json,
 ) => _RefreshSessionParams(
-  userId: json['userId'] as String,
-  sessionId: json['sessionId'] as String,
-  token: json['token'] as String,
+  refreshToken: json['refreshToken'] as String,
   ipAddress: json['ipAddress'] as String,
   userAgent: json['userAgent'] as String,
 );
@@ -19,9 +17,7 @@ _RefreshSessionParams _$RefreshSessionParamsFromJson(
 Map<String, dynamic> _$RefreshSessionParamsToJson(
   _RefreshSessionParams instance,
 ) => <String, dynamic>{
-  'userId': instance.userId,
-  'sessionId': instance.sessionId,
-  'token': instance.token,
+  'refreshToken': instance.refreshToken,
   'ipAddress': instance.ipAddress,
   'userAgent': instance.userAgent,
 };

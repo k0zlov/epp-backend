@@ -1,5 +1,3 @@
-import 'package:epp_backend/contexts/auth/application/commands/send_auth_code_use_case.dart';
-import 'package:epp_backend/contexts/auth/application/mail_templates/auth_code_template.dart';
 import 'package:epp_backend/contexts/auth/auth.dart';
 import 'package:epp_backend/shared/application/application.dart';
 import 'package:epp_backend/shared/infrastructure/infrastructure.dart';

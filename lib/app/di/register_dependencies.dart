@@ -2,8 +2,7 @@ import 'package:drift_postgres/drift_postgres.dart';
 import 'package:epp_backend/app/database/database.dart';
 import 'package:epp_backend/app/di/dot_env.dart';
 import 'package:epp_backend/contexts/auth/auth.dart';
-import 'package:epp_backend/contexts/auth/presentation/errors/auth_failure_mapper.dart';
-import 'package:epp_backend/contexts/auth/presentation/rest/auth_controller.dart';
+import 'package:epp_backend/contexts/auth/presentation/listeners/user_logged_out_listener.dart';
 import 'package:epp_backend/shared/application/application.dart';
 import 'package:epp_backend/shared/infrastructure/infrastructure.dart';
 import 'package:epp_backend/shared/presentation/presentation.dart';
@@ -25,6 +24,7 @@ Future<void> registerDependencies() async {
   await _useCases();
   await _failureMappers();
   await _controllers();
+  await _listeners();
   await _routes();
 }
 
@@ -72,6 +72,10 @@ Future<void> _projector() async {
       EmailConfirmedProjector(db: getIt()),
       AuthCodeCreatedProjector(db: getIt()),
       AuthSessionRefreshedProjector(db: getIt()),
+      AuthTokenReuseDetectedProjector(db: getIt()),
+      PasswordResetFailedProjector(db: getIt()),
+      UserPasswordResetProjector(db: getIt()),
+      UserLoggedOutProjector(db: getIt()),
     ]),
   );
 }
@@ -129,6 +133,33 @@ Future<void> _useCases() async {
         projector: getIt(),
         eventBus: getIt(),
       ),
+    )
+    ..registerLazySingleton(
+      () => RefreshSessionUseCase(
+        unitOfWork: getIt(),
+        repository: getIt(),
+        hashService: getIt(),
+        projector: getIt(),
+        eventBus: getIt(),
+        tokenService: getIt(),
+      ),
+    )
+    ..registerLazySingleton(
+      () => LogoutUseCase(
+        unitOfWork: getIt(),
+        repository: getIt(),
+        projector: getIt(),
+        eventBus: getIt(),
+      ),
+    )
+    ..registerLazySingleton(
+      () => ConfirmPasswordResetUseCase(
+        unitOfWork: getIt(),
+        repository: getIt(),
+        eventBus: getIt(),
+        projector: getIt(),
+        hashService: getIt(),
+      ),
     );
 }
 
@@ -137,15 +168,20 @@ Future<void> _failureMappers() async {
 }
 
 Future<void> _controllers() async {
-  getIt.registerLazySingleton<AuthController>(
-    () => AuthController(
-      failureMapper: getIt(),
-      signUpUseCase: getIt(),
-      loginUseCase: getIt(),
-      confirmEmailUseCase: getIt(),
-      sendAuthCodeUseCase: getIt(),
-    ),
-  );
+  getIt
+    ..registerLazySingleton<AuthController>(
+      () => AuthController(
+        failureMapper: getIt(),
+        signUpUseCase: getIt(),
+        loginUseCase: getIt(),
+        confirmEmailUseCase: getIt(),
+        sendAuthCodeUseCase: getIt(),
+        logoutUseCase: getIt(),
+        refreshSessionUseCase: getIt(),
+        confirmPasswordResetUseCase: getIt(),
+      ),
+    )
+    ..registerSingleton(UserWsController(manager: getIt()));
 }
 
 Future<void> _routes() async {
@@ -156,4 +192,19 @@ Future<void> _routes() async {
       ),
     )
     ..registerLazySingleton<WsRoute>(() => WsRoute(wsManager: getIt()));
+}
+
+Future<void> _listeners() async {
+  getIt
+    ..registerSingleton(AuthCodeCreatedListener(eventBus: getIt()))
+    ..registerSingleton(AuthSessionRefreshedListener(eventBus: getIt()))
+    ..registerSingleton(AuthTokenReuseDetectedListener(eventBus: getIt()))
+    ..registerSingleton(EmailConfirmationFailedListener(eventBus: getIt()))
+    ..registerSingleton(EmailConfirmedListener(eventBus: getIt()))
+    ..registerSingleton(PasswordResetFailedListener(eventBus: getIt()))
+    ..registerSingleton(UserLoggedInListener(eventBus: getIt()))
+    ..registerSingleton(UserLoggedOutListener(eventBus: getIt()))
+    ..registerSingleton(UserPasswordResetListener(eventBus: getIt()))
+    ..registerSingleton(UserSignedUpListener(eventBus: getIt()))
+    ..registerSingleton(UserLoggedOutIntegrationListener(eventBus: getIt(), wsManager: getIt()));
 }

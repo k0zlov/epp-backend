@@ -10,7 +10,7 @@ abstract interface class TokenService {
   /// Used by the Auth Context during login
   String issue({required TokenPayload payload, required TokenType type});
 
-  bool verify(String token, [TokenType type = TokenType.access]);
+  bool verify(String token, {TokenType type = TokenType.access});
 
-  TokenPayload? extractPayload(String token, [TokenType type = TokenType.access]);
+  TokenPayload? extractPayload(String token, {TokenType type = TokenType.access});
 }

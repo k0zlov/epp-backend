@@ -166,7 +166,7 @@ class WsManager {
 
     switch (clientMessage.action) {
       case WsClientAction.subscribe:
-        final PresentationError? error = await controller.canSubscribe(topic);
+        final PresentationError? error = await controller.canSubscribe(topic, clientInfo);
 
         if (error != null) {
           channel.sink.add(jsonEncode(WsServerMessage.error(topic: topic, error: error).toJson()));
@@ -205,7 +205,7 @@ class WsManager {
     final ids = _sessionToConnections[sessionId];
     if (ids == null) return;
 
-    for (final id in ids) {
+    for (final id in ids.toList()) {
       await disconnect(id);
     }
   }

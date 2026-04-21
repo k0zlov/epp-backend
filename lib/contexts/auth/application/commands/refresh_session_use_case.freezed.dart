@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$RefreshSessionParams {
 
- String get userId; String get sessionId; String get token; String get ipAddress; String get userAgent;
+ String get refreshToken; String get ipAddress; String get userAgent;
 /// Create a copy of RefreshSessionParams
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +28,16 @@ $RefreshSessionParamsCopyWith<RefreshSessionParams> get copyWith => _$RefreshSes
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is RefreshSessionParams&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.sessionId, sessionId) || other.sessionId == sessionId)&&(identical(other.token, token) || other.token == token)&&(identical(other.ipAddress, ipAddress) || other.ipAddress == ipAddress)&&(identical(other.userAgent, userAgent) || other.userAgent == userAgent));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is RefreshSessionParams&&(identical(other.refreshToken, refreshToken) || other.refreshToken == refreshToken)&&(identical(other.ipAddress, ipAddress) || other.ipAddress == ipAddress)&&(identical(other.userAgent, userAgent) || other.userAgent == userAgent));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,userId,sessionId,token,ipAddress,userAgent);
+int get hashCode => Object.hash(runtimeType,refreshToken,ipAddress,userAgent);
 
 @override
 String toString() {
-  return 'RefreshSessionParams(userId: $userId, sessionId: $sessionId, token: $token, ipAddress: $ipAddress, userAgent: $userAgent)';
+  return 'RefreshSessionParams(refreshToken: $refreshToken, ipAddress: $ipAddress, userAgent: $userAgent)';
 }
 
 
@@ -48,7 +48,7 @@ abstract mixin class $RefreshSessionParamsCopyWith<$Res>  {
   factory $RefreshSessionParamsCopyWith(RefreshSessionParams value, $Res Function(RefreshSessionParams) _then) = _$RefreshSessionParamsCopyWithImpl;
 @useResult
 $Res call({
- String userId, String sessionId, String token, String ipAddress, String userAgent
+ String refreshToken, String ipAddress, String userAgent
 });
 
 
@@ -65,11 +65,9 @@ class _$RefreshSessionParamsCopyWithImpl<$Res>
 
 /// Create a copy of RefreshSessionParams
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? userId = null,Object? sessionId = null,Object? token = null,Object? ipAddress = null,Object? userAgent = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? refreshToken = null,Object? ipAddress = null,Object? userAgent = null,}) {
   return _then(_self.copyWith(
-userId: null == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
-as String,sessionId: null == sessionId ? _self.sessionId : sessionId // ignore: cast_nullable_to_non_nullable
-as String,token: null == token ? _self.token : token // ignore: cast_nullable_to_non_nullable
+refreshToken: null == refreshToken ? _self.refreshToken : refreshToken // ignore: cast_nullable_to_non_nullable
 as String,ipAddress: null == ipAddress ? _self.ipAddress : ipAddress // ignore: cast_nullable_to_non_nullable
 as String,userAgent: null == userAgent ? _self.userAgent : userAgent // ignore: cast_nullable_to_non_nullable
 as String,
@@ -157,10 +155,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String userId,  String sessionId,  String token,  String ipAddress,  String userAgent)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String refreshToken,  String ipAddress,  String userAgent)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _RefreshSessionParams() when $default != null:
-return $default(_that.userId,_that.sessionId,_that.token,_that.ipAddress,_that.userAgent);case _:
+return $default(_that.refreshToken,_that.ipAddress,_that.userAgent);case _:
   return orElse();
 
 }
@@ -178,10 +176,10 @@ return $default(_that.userId,_that.sessionId,_that.token,_that.ipAddress,_that.u
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String userId,  String sessionId,  String token,  String ipAddress,  String userAgent)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String refreshToken,  String ipAddress,  String userAgent)  $default,) {final _that = this;
 switch (_that) {
 case _RefreshSessionParams():
-return $default(_that.userId,_that.sessionId,_that.token,_that.ipAddress,_that.userAgent);case _:
+return $default(_that.refreshToken,_that.ipAddress,_that.userAgent);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -198,10 +196,10 @@ return $default(_that.userId,_that.sessionId,_that.token,_that.ipAddress,_that.u
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String userId,  String sessionId,  String token,  String ipAddress,  String userAgent)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String refreshToken,  String ipAddress,  String userAgent)?  $default,) {final _that = this;
 switch (_that) {
 case _RefreshSessionParams() when $default != null:
-return $default(_that.userId,_that.sessionId,_that.token,_that.ipAddress,_that.userAgent);case _:
+return $default(_that.refreshToken,_that.ipAddress,_that.userAgent);case _:
   return null;
 
 }
@@ -213,12 +211,10 @@ return $default(_that.userId,_that.sessionId,_that.token,_that.ipAddress,_that.u
 @JsonSerializable()
 
 class _RefreshSessionParams implements RefreshSessionParams {
-  const _RefreshSessionParams({required this.userId, required this.sessionId, required this.token, required this.ipAddress, required this.userAgent});
+  const _RefreshSessionParams({required this.refreshToken, required this.ipAddress, required this.userAgent});
   factory _RefreshSessionParams.fromJson(Map<String, dynamic> json) => _$RefreshSessionParamsFromJson(json);
 
-@override final  String userId;
-@override final  String sessionId;
-@override final  String token;
+@override final  String refreshToken;
 @override final  String ipAddress;
 @override final  String userAgent;
 
@@ -235,16 +231,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _RefreshSessionParams&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.sessionId, sessionId) || other.sessionId == sessionId)&&(identical(other.token, token) || other.token == token)&&(identical(other.ipAddress, ipAddress) || other.ipAddress == ipAddress)&&(identical(other.userAgent, userAgent) || other.userAgent == userAgent));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _RefreshSessionParams&&(identical(other.refreshToken, refreshToken) || other.refreshToken == refreshToken)&&(identical(other.ipAddress, ipAddress) || other.ipAddress == ipAddress)&&(identical(other.userAgent, userAgent) || other.userAgent == userAgent));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,userId,sessionId,token,ipAddress,userAgent);
+int get hashCode => Object.hash(runtimeType,refreshToken,ipAddress,userAgent);
 
 @override
 String toString() {
-  return 'RefreshSessionParams(userId: $userId, sessionId: $sessionId, token: $token, ipAddress: $ipAddress, userAgent: $userAgent)';
+  return 'RefreshSessionParams(refreshToken: $refreshToken, ipAddress: $ipAddress, userAgent: $userAgent)';
 }
 
 
@@ -255,7 +251,7 @@ abstract mixin class _$RefreshSessionParamsCopyWith<$Res> implements $RefreshSes
   factory _$RefreshSessionParamsCopyWith(_RefreshSessionParams value, $Res Function(_RefreshSessionParams) _then) = __$RefreshSessionParamsCopyWithImpl;
 @override @useResult
 $Res call({
- String userId, String sessionId, String token, String ipAddress, String userAgent
+ String refreshToken, String ipAddress, String userAgent
 });
 
 
@@ -272,11 +268,9 @@ class __$RefreshSessionParamsCopyWithImpl<$Res>
 
 /// Create a copy of RefreshSessionParams
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? userId = null,Object? sessionId = null,Object? token = null,Object? ipAddress = null,Object? userAgent = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? refreshToken = null,Object? ipAddress = null,Object? userAgent = null,}) {
   return _then(_RefreshSessionParams(
-userId: null == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
-as String,sessionId: null == sessionId ? _self.sessionId : sessionId // ignore: cast_nullable_to_non_nullable
-as String,token: null == token ? _self.token : token // ignore: cast_nullable_to_non_nullable
+refreshToken: null == refreshToken ? _self.refreshToken : refreshToken // ignore: cast_nullable_to_non_nullable
 as String,ipAddress: null == ipAddress ? _self.ipAddress : ipAddress // ignore: cast_nullable_to_non_nullable
 as String,userAgent: null == userAgent ? _self.userAgent : userAgent // ignore: cast_nullable_to_non_nullable
 as String,

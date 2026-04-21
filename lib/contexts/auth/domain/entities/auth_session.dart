@@ -43,7 +43,12 @@ class AuthSession extends Entity {
 
   bool get isInvalidated => invalidatedAt != null;
 
-  bool get isValid => !isExpired && !isInvalidated;
+  bool get isActive => !isExpired && !isInvalidated;
+
+  void invalidate() {
+    invalidatedAt = DateTime.timestamp();
+    updateTimestamp();
+  }
 
   Result<void> refresh({
     required bool isTokenValid,
@@ -52,8 +57,12 @@ class AuthSession extends Entity {
     required String userAgent,
     required DateTime expiresAt,
   }) {
-    if (!isTokenValid) return Failure(AuthTokenInvalid());
-    if (!isValid) return Failure(AuthSessionInvalid());
+    if (!isActive) return Failure(AuthSessionInvalid());
+
+    if (!isTokenValid) {
+      invalidate();
+      return Failure(AuthTokenInvalid());
+    }
 
     tokenHash = newTokenHash;
     this.ipAddress = ipAddress;
@@ -61,6 +70,13 @@ class AuthSession extends Entity {
     this.expiresAt = expiresAt;
 
     updateTimestamp();
+    return const Success(null);
+  }
+
+  Result<void> logout() {
+    if (isInvalidated) return Failure(AuthSessionInvalid());
+
+    invalidate();
     return const Success(null);
   }
 }

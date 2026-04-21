@@ -1,6 +1,5 @@
 import 'package:epp_backend/contexts/auth/application/application.dart';
 import 'package:epp_backend/contexts/auth/domain/domain.dart';
-import 'package:epp_backend/contexts/auth/domain/value_objects/password.dart';
 import 'package:epp_backend/shared/application/application.dart';
 import 'package:epp_backend/shared/domain/domain.dart';
 import 'package:epp_backend/shared/infrastructure/extensions/either_x.dart';

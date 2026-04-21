@@ -1,7 +1,6 @@
 import 'dart:math';
 
 import 'package:epp_backend/contexts/auth/application/application.dart';
-import 'package:epp_backend/contexts/auth/application/mail_templates/auth_code_template.dart';
 import 'package:epp_backend/contexts/auth/domain/domain.dart';
 import 'package:epp_backend/shared/application/application.dart';
 import 'package:epp_backend/shared/domain/base/result.dart';
@@ -52,7 +51,7 @@ class SendAuthCodeUseCase extends UseCase<void, SendAuthCodeParams> {
         final String code = (Random().nextInt(900000) + 100000).toString();
         final String codeHash = await hashService.hash(code);
 
-        const AuthCodeType type = AuthCodeType.emailVerification;
+        final AuthCodeType type = params.type;
 
         const codeExpiresInMinutes = 15;
         final codeExpiresAt = DateTime.timestamp().add(const Duration(minutes: codeExpiresInMinutes));

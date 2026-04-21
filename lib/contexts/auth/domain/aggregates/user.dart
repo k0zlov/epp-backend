@@ -40,7 +40,7 @@ class User extends Aggregate {
   }
 
   final Email email;
-  final String passwordHash;
+  String passwordHash;
   String displayName;
   bool isVerified;
   final DateTime? deletedAt;
@@ -78,7 +78,7 @@ class User extends Aggregate {
     });
   }
 
-  Result<AuthCode> findSecret({required AuthCodeType type}) {
+  Result<AuthCode> findCode({required AuthCodeType type}) {
     final AuthCode? code = _codes.firstWhereOrNull(
       (e) => e.canBeUsed && e.type == AuthCodeType.emailVerification,
     );
@@ -90,8 +90,8 @@ class User extends Aggregate {
     return Success(code);
   }
 
-  Result<void> confirmEmail({required String secretId, required bool isSecretCorrect}) {
-    final AuthCode? code = _codes.firstWhereOrNull((e) => e.id == secretId);
+  Result<void> confirmEmail({required String codeId, required bool isCodeCorrect}) {
+    final AuthCode? code = _codes.firstWhereOrNull((e) => e.id == codeId);
 
     if (code == null) {
       return Failure(AuthCodeNotFound());
@@ -101,7 +101,7 @@ class User extends Aggregate {
       return Failure(UserAlreadyVerified());
     }
 
-    final result = code.use(isCodeCorrect: isSecretCorrect);
+    final result = code.use(isCodeCorrect: isCodeCorrect);
 
     updateTimestamp();
 
@@ -192,11 +192,58 @@ class User extends Aggregate {
       expiresAt: expiresAt,
     );
 
+    if (result.isFailure && !isTokenValid) {
+      updateTimestamp();
+      addEvent(AuthTokenReuseDetectedEvent(user: this, session: session));
+    }
+
     if (result.isFailure) return result;
 
     updateTimestamp();
-
     addEvent(AuthSessionRefreshedEvent(user: this, session: session));
+    return const Success(null);
+  }
+
+  Result<void> logout({required String sessionId}) {
+    final sessionResult = findSession(sessionId: sessionId);
+
+    if (sessionResult.isFailure) return sessionResult;
+
+    final AuthSession session = sessionResult.getSuccess;
+    final result = session.logout();
+
+    if (result.isFailure) return result;
+
+    updateTimestamp();
+    addEvent(UserLoggedOutEvent(user: this, session: session));
+    return const Success(null);
+  }
+
+  Result<void> resetPassword({
+    required String codeId,
+    required bool isCodeCorrect,
+    required String newPasswordHash,
+  }) {
+    final AuthCode? code = _codes.firstWhereOrNull((e) => e.id == codeId);
+
+    if (code == null) return Failure(AuthCodeNotFound());
+
+    final result = code.use(isCodeCorrect: isCodeCorrect);
+
+    if (result.isFailure) {
+      updateTimestamp();
+      addEvent(PasswordResetFailedEvent(user: this, code: code));
+      return result;
+    }
+
+    passwordHash = newPasswordHash;
+
+    for (final e in _sessions) {
+      e.invalidate();
+    }
+
+    updateTimestamp();
+    addEvent(UserPasswordResetEvent(user: this, code: code, sessions: sessions));
     return const Success(null);
   }
 }

@@ -1,5 +1,4 @@
 import 'package:epp_backend/contexts/auth/application/application.dart';
-import 'package:epp_backend/contexts/auth/application/view/tokens_view.dart';
 import 'package:epp_backend/contexts/auth/domain/domain.dart';
 import 'package:epp_backend/shared/application/application.dart';
 import 'package:epp_backend/shared/application/base/token_payload.dart';
@@ -14,9 +13,7 @@ part 'refresh_session_use_case.freezed.dart';
 @freezed
 abstract class RefreshSessionParams with _$RefreshSessionParams {
   const factory RefreshSessionParams({
-    required String userId,
-    required String sessionId,
-    required String token,
+    required String refreshToken,
     required String ipAddress,
     required String userAgent,
   }) = _RefreshSessionParams;
@@ -28,7 +25,7 @@ class RefreshSessionUseCase extends UseCase<TokensView, RefreshSessionParams> {
   const RefreshSessionUseCase({
     required this.tokenService,
     required this.unitOfWork,
-    required this.userRepository,
+    required this.repository,
     required this.eventBus,
     required this.projector,
     required this.hashService,
@@ -36,19 +33,24 @@ class RefreshSessionUseCase extends UseCase<TokensView, RefreshSessionParams> {
 
   final TokenService tokenService;
   final UnitOfWork unitOfWork;
-  final UserRepository userRepository;
+  final UserRepository repository;
   final EventBus eventBus;
   final EventProjector projector;
   final HashService hashService;
 
   @override
-  Future<Result<TokensView>> call(RefreshSessionParams params) {
-    final String sessionId = params.sessionId;
+  Future<Result<TokensView>> call(RefreshSessionParams params) async {
+    final TokenPayload? payload = tokenService.extractPayload(params.refreshToken, type: TokenType.refresh);
+
+    if (payload == null) return Failure(AuthTokenInvalid());
+
+    final String sessionId = payload.sessionId;
+    final String userId = payload.userId;
 
     return unitOfWork.execute(
-      errorMessage: 'Failed to refresh session ($sessionId) of user (${params.userId})',
+      errorMessage: 'Failed to refresh session ($sessionId) of user ($userId)',
       () async {
-        final User? user = await userRepository.getUserById(params.userId);
+        final User? user = await repository.getUserById(userId);
 
         if (user == null) {
           return Failure(UserNotFound());
@@ -58,7 +60,7 @@ class RefreshSessionUseCase extends UseCase<TokensView, RefreshSessionParams> {
         if (sessionResult.isFailure) return Failure(sessionResult.getFailure);
 
         final AuthSession session = sessionResult.getSuccess;
-        final bool isTokenValid = await hashService.verify(params.token, session.tokenHash);
+        final bool isTokenValid = await hashService.verify(params.refreshToken, session.tokenHash);
 
         final String newRefreshToken = tokenService.issue(
           payload: TokenPayload(userId: user.id, sessionId: sessionId),

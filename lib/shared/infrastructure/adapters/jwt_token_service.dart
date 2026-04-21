@@ -34,7 +34,7 @@ class JwtTokenService implements TokenService {
   }
 
   @override
-  bool verify(String token, [TokenType type = TokenType.access]) {
+  bool verify(String token, {TokenType type = TokenType.access}) {
     try {
       JWT.verify(token, _secretKey(type));
       return true;
@@ -45,7 +45,7 @@ class JwtTokenService implements TokenService {
   }
 
   @override
-  TokenPayload? extractPayload(String token, [TokenType type = TokenType.access]) {
+  TokenPayload? extractPayload(String token, {TokenType type = TokenType.access}) {
     try {
       final jwt = JWT.verify(token, _secretKey(type));
 

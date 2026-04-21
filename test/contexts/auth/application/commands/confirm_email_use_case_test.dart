@@ -1,4 +1,3 @@
-import 'package:epp_backend/contexts/auth/application/commands/confirm_email_use_case.dart';
 import 'package:epp_backend/contexts/auth/auth.dart';
 import 'package:epp_backend/shared/infrastructure/infrastructure.dart';
 import 'package:mocktail/mocktail.dart';

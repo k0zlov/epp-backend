@@ -11,6 +11,7 @@ extension AuthSessionRowMapper on AuthSessionRow {
       tokenHash: tokenHash,
       ipAddress: ipAddress,
       userAgent: userAgent,
+      invalidatedAt: invalidatedAt,
     );
   }
 
@@ -24,6 +25,7 @@ extension AuthSessionRowMapper on AuthSessionRow {
       expiresAt: session.expiresAt,
       createdAt: session.createdAt,
       updatedAt: session.updatedAt,
+      invalidatedAt: session.invalidatedAt,
     );
   }
 }

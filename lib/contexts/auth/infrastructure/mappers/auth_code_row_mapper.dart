@@ -13,6 +13,7 @@ extension AuthCodeRowMapper on AuthCodeRow {
       hash: hash,
       type: type,
       expiresAt: expiresAt,
+
     );
   }
 

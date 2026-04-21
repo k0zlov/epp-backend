@@ -1,4 +1,5 @@
 import 'package:epp_backend/contexts/auth/presentation/rest/auth_controller.dart';
+import 'package:epp_backend/shared/presentation/middlewares/require_auth_middleware.dart';
 import 'package:ruta/annotations.dart';
 import 'package:ruta/ruta.dart';
 
@@ -52,6 +53,36 @@ class AuthRoute extends Route {
       body: [
         Field<String>('email'),
         Field<String>('type'),
+      ],
+    );
+  }
+
+  Endpoint get refreshSession {
+    return Endpoint.post(
+      path: 'refresh-session',
+      handler: controller.refreshSession,
+      body: [
+        Field<String>('refreshToken'),
+      ],
+    );
+  }
+
+  Endpoint get logout {
+    return Endpoint.post(
+      path: 'logout',
+      middlewares: [RequireAuthMiddleware()],
+      handler: controller.logout,
+    );
+  }
+
+  Endpoint get confirmPasswordReset {
+    return Endpoint.post(
+      path: 'confirm-password-reset',
+      handler: controller.confirmPasswordReset,
+      body: [
+        Field<String>('email'),
+        Field<String>('code'),
+        Field<String>('newPassword'),
       ],
     );
   }

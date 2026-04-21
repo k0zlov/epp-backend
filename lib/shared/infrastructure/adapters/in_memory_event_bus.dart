@@ -2,11 +2,16 @@ import 'package:epp_backend/shared/application/ports/event_bus.dart';
 import 'package:epp_backend/shared/domain/base/event.dart';
 
 class InMemoryEventBus implements EventBus {
-  final Map<Type, List<Function>> _handlersMap = {};
+  final Map<String, List<Function>> _handlersMap = {};
+
+  String _normalize(String typeName) {
+    return typeName.replaceAll('_', '').replaceAll(r'$', '');
+  }
 
   @override
   void publish<T extends Event>(T event) {
-    final handlers = _handlersMap[event.runtimeType];
+    final String key = _normalize(event.runtimeType.toString());
+    final handlers = _handlersMap[key];
 
     if (handlers == null) return;
     for (final handler in handlers) {
@@ -17,7 +22,8 @@ class InMemoryEventBus implements EventBus {
   @override
   void subscribe<T extends Event>(EventHandlerFunc<T> handler, {Type? eventType}) {
     final Type type = eventType ?? T;
-    _handlersMap[type] = (_handlersMap[type] ?? [])..add(handler);
+    final String key = _normalize(type.toString());
+    _handlersMap[key] = (_handlersMap[key] ?? [])..add(handler);
   }
 
   @override

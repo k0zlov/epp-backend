@@ -1,46 +1,64 @@
 import 'package:epp_backend/contexts/auth/auth.dart';
 import 'package:epp_backend/shared/domain/base/event.dart';
 
-sealed class UserEvents extends DomainEvent {
-  UserEvents({required this.user});
+sealed class UserEvent extends DomainEvent {
+  UserEvent({required this.user});
 
   final User user;
 }
 
-class UserSignedUpEvent extends UserEvents {
+sealed class AuthSessionEvent extends UserEvent {
+  AuthSessionEvent({required this.session, required super.user});
+
+  final AuthSession session;
+}
+
+sealed class AuthCodeEvent extends UserEvent {
+  AuthCodeEvent({required this.code, required super.user});
+
+  final AuthCode code;
+}
+
+class UserSignedUpEvent extends UserEvent {
   UserSignedUpEvent({required super.user});
 }
 
-class UserLoggedInEvent extends UserEvents {
-  UserLoggedInEvent({
-    required super.user,
-    required this.session,
-  });
-
-  final AuthSession session;
+class UserLoggedInEvent extends AuthSessionEvent {
+  UserLoggedInEvent({required super.user, required super.session});
 }
 
-class EmailConfirmedEvent extends UserEvents {
-  EmailConfirmedEvent({required super.user, required this.code});
-
-  final AuthCode code;
+class EmailConfirmedEvent extends AuthCodeEvent {
+  EmailConfirmedEvent({required super.user, required super.code});
 }
 
-class EmailConfirmationFailedEvent extends UserEvents {
-  EmailConfirmationFailedEvent({required super.user, required this.code});
-
-  final AuthCode code;
+class EmailConfirmationFailedEvent extends AuthCodeEvent {
+  EmailConfirmationFailedEvent({required super.user, required super.code});
 }
 
-class AuthCodeCreatedEvent extends UserEvents {
-  AuthCodeCreatedEvent({required this.invalidatedCodes, required super.user, required this.code});
+class AuthCodeCreatedEvent extends AuthCodeEvent {
+  AuthCodeCreatedEvent({required this.invalidatedCodes, required super.user, required super.code});
 
-  final AuthCode code;
   final List<AuthCode> invalidatedCodes;
 }
 
-class AuthSessionRefreshedEvent extends UserEvents {
-  AuthSessionRefreshedEvent({required super.user, required this.session});
+class AuthSessionRefreshedEvent extends AuthSessionEvent {
+  AuthSessionRefreshedEvent({required super.user, required super.session});
+}
 
-  final AuthSession session;
+class AuthTokenReuseDetectedEvent extends AuthSessionEvent {
+  AuthTokenReuseDetectedEvent({required super.user, required super.session});
+}
+
+class UserLoggedOutEvent extends AuthSessionEvent {
+  UserLoggedOutEvent({required super.user, required super.session});
+}
+
+class UserPasswordResetEvent extends AuthCodeEvent {
+  UserPasswordResetEvent({required this.sessions, required super.code, required super.user});
+
+  final List<AuthSession> sessions;
+}
+
+class PasswordResetFailedEvent extends AuthCodeEvent {
+  PasswordResetFailedEvent({required super.code, required super.user});
 }

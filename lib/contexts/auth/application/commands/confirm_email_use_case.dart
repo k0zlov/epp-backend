@@ -43,13 +43,13 @@ class ConfirmEmailUseCase extends UseCase<void, ConfirmEmailParams> {
         return Failure(UserNotFound());
       }
 
-      final findSecretResult = user.findSecret(type: AuthCodeType.emailVerification);
+      final findSecretResult = user.findCode(type: AuthCodeType.emailVerification);
       if (findSecretResult.isFailure) return findSecretResult;
 
       final secret = findSecretResult.getSuccess;
       final isCodeCorrect = await hashService.verify(params.code, secret.hash);
 
-      final result = user.confirmEmail(secretId: secret.id, isSecretCorrect: isCodeCorrect);
+      final result = user.confirmEmail(codeId: secret.id, isCodeCorrect: isCodeCorrect);
 
       await projector.projectAll(user.events);
       eventBus.publishAll(user.events);

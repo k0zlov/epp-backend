@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:epp_backend/shared/application/base/exceptions.dart';
 import 'package:epp_backend/shared/application/ports/logger_service.dart';
 import 'package:epp_backend/shared/presentation/base/presentation_error.dart';
+import 'package:epp_backend/shared/presentation/extensions/request_x.dart';
 import 'package:ruta/ruta.dart';
 
 class ErrorMiddleware extends Middleware {
@@ -12,6 +13,8 @@ class ErrorMiddleware extends Middleware {
   @override
   Handler call(Handler handler) {
     return (Request request) async {
+      if (request.isSocketConnection) return handler(request);
+
       try {
         return await handler(request);
       } on InfrastructureException catch (e) {

@@ -594,6 +594,18 @@ class $AuthSessionsTable extends AuthSessions
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _invalidatedAtMeta = const VerificationMeta(
+    'invalidatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> invalidatedAt =
+      GeneratedColumn<DateTime>(
+        'invalidated_at',
+        aliasedName,
+        true,
+        type: DriftSqlType.dateTime,
+        requiredDuringInsert: false,
+      );
   static const VerificationMeta _expiresAtMeta = const VerificationMeta(
     'expiresAt',
   );
@@ -634,6 +646,7 @@ class $AuthSessionsTable extends AuthSessions
     tokenHash,
     ipAddress,
     userAgent,
+    invalidatedAt,
     expiresAt,
     createdAt,
     updatedAt,
@@ -686,6 +699,15 @@ class $AuthSessionsTable extends AuthSessions
       );
     } else if (isInserting) {
       context.missing(_userAgentMeta);
+    }
+    if (data.containsKey('invalidated_at')) {
+      context.handle(
+        _invalidatedAtMeta,
+        invalidatedAt.isAcceptableOrUnknown(
+          data['invalidated_at']!,
+          _invalidatedAtMeta,
+        ),
+      );
     }
     if (data.containsKey('expires_at')) {
       context.handle(
@@ -740,6 +762,10 @@ class $AuthSessionsTable extends AuthSessions
         DriftSqlType.string,
         data['${effectivePrefix}user_agent'],
       )!,
+      invalidatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}invalidated_at'],
+      ),
       expiresAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}expires_at'],
@@ -767,6 +793,7 @@ class AuthSessionRow extends DataClass implements Insertable<AuthSessionRow> {
   final String tokenHash;
   final String ipAddress;
   final String userAgent;
+  final DateTime? invalidatedAt;
   final DateTime expiresAt;
   final DateTime createdAt;
   final DateTime updatedAt;
@@ -776,6 +803,7 @@ class AuthSessionRow extends DataClass implements Insertable<AuthSessionRow> {
     required this.tokenHash,
     required this.ipAddress,
     required this.userAgent,
+    this.invalidatedAt,
     required this.expiresAt,
     required this.createdAt,
     required this.updatedAt,
@@ -788,6 +816,9 @@ class AuthSessionRow extends DataClass implements Insertable<AuthSessionRow> {
     map['token_hash'] = Variable<String>(tokenHash);
     map['ip_address'] = Variable<String>(ipAddress);
     map['user_agent'] = Variable<String>(userAgent);
+    if (!nullToAbsent || invalidatedAt != null) {
+      map['invalidated_at'] = Variable<DateTime>(invalidatedAt);
+    }
     map['expires_at'] = Variable<DateTime>(expiresAt);
     map['created_at'] = Variable<DateTime>(createdAt);
     map['updated_at'] = Variable<DateTime>(updatedAt);
@@ -801,6 +832,9 @@ class AuthSessionRow extends DataClass implements Insertable<AuthSessionRow> {
       tokenHash: Value(tokenHash),
       ipAddress: Value(ipAddress),
       userAgent: Value(userAgent),
+      invalidatedAt: invalidatedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(invalidatedAt),
       expiresAt: Value(expiresAt),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
@@ -818,6 +852,7 @@ class AuthSessionRow extends DataClass implements Insertable<AuthSessionRow> {
       tokenHash: serializer.fromJson<String>(json['tokenHash']),
       ipAddress: serializer.fromJson<String>(json['ipAddress']),
       userAgent: serializer.fromJson<String>(json['userAgent']),
+      invalidatedAt: serializer.fromJson<DateTime?>(json['invalidatedAt']),
       expiresAt: serializer.fromJson<DateTime>(json['expiresAt']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
@@ -832,6 +867,7 @@ class AuthSessionRow extends DataClass implements Insertable<AuthSessionRow> {
       'tokenHash': serializer.toJson<String>(tokenHash),
       'ipAddress': serializer.toJson<String>(ipAddress),
       'userAgent': serializer.toJson<String>(userAgent),
+      'invalidatedAt': serializer.toJson<DateTime?>(invalidatedAt),
       'expiresAt': serializer.toJson<DateTime>(expiresAt),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
@@ -844,6 +880,7 @@ class AuthSessionRow extends DataClass implements Insertable<AuthSessionRow> {
     String? tokenHash,
     String? ipAddress,
     String? userAgent,
+    Value<DateTime?> invalidatedAt = const Value.absent(),
     DateTime? expiresAt,
     DateTime? createdAt,
     DateTime? updatedAt,
@@ -853,6 +890,9 @@ class AuthSessionRow extends DataClass implements Insertable<AuthSessionRow> {
     tokenHash: tokenHash ?? this.tokenHash,
     ipAddress: ipAddress ?? this.ipAddress,
     userAgent: userAgent ?? this.userAgent,
+    invalidatedAt: invalidatedAt.present
+        ? invalidatedAt.value
+        : this.invalidatedAt,
     expiresAt: expiresAt ?? this.expiresAt,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
@@ -864,6 +904,9 @@ class AuthSessionRow extends DataClass implements Insertable<AuthSessionRow> {
       tokenHash: data.tokenHash.present ? data.tokenHash.value : this.tokenHash,
       ipAddress: data.ipAddress.present ? data.ipAddress.value : this.ipAddress,
       userAgent: data.userAgent.present ? data.userAgent.value : this.userAgent,
+      invalidatedAt: data.invalidatedAt.present
+          ? data.invalidatedAt.value
+          : this.invalidatedAt,
       expiresAt: data.expiresAt.present ? data.expiresAt.value : this.expiresAt,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
@@ -878,6 +921,7 @@ class AuthSessionRow extends DataClass implements Insertable<AuthSessionRow> {
           ..write('tokenHash: $tokenHash, ')
           ..write('ipAddress: $ipAddress, ')
           ..write('userAgent: $userAgent, ')
+          ..write('invalidatedAt: $invalidatedAt, ')
           ..write('expiresAt: $expiresAt, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt')
@@ -892,6 +936,7 @@ class AuthSessionRow extends DataClass implements Insertable<AuthSessionRow> {
     tokenHash,
     ipAddress,
     userAgent,
+    invalidatedAt,
     expiresAt,
     createdAt,
     updatedAt,
@@ -905,6 +950,7 @@ class AuthSessionRow extends DataClass implements Insertable<AuthSessionRow> {
           other.tokenHash == this.tokenHash &&
           other.ipAddress == this.ipAddress &&
           other.userAgent == this.userAgent &&
+          other.invalidatedAt == this.invalidatedAt &&
           other.expiresAt == this.expiresAt &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt);
@@ -916,6 +962,7 @@ class AuthSessionsCompanion extends UpdateCompanion<AuthSessionRow> {
   final Value<String> tokenHash;
   final Value<String> ipAddress;
   final Value<String> userAgent;
+  final Value<DateTime?> invalidatedAt;
   final Value<DateTime> expiresAt;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
@@ -926,6 +973,7 @@ class AuthSessionsCompanion extends UpdateCompanion<AuthSessionRow> {
     this.tokenHash = const Value.absent(),
     this.ipAddress = const Value.absent(),
     this.userAgent = const Value.absent(),
+    this.invalidatedAt = const Value.absent(),
     this.expiresAt = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
@@ -937,6 +985,7 @@ class AuthSessionsCompanion extends UpdateCompanion<AuthSessionRow> {
     required String tokenHash,
     required String ipAddress,
     required String userAgent,
+    this.invalidatedAt = const Value.absent(),
     required DateTime expiresAt,
     required DateTime createdAt,
     required DateTime updatedAt,
@@ -955,6 +1004,7 @@ class AuthSessionsCompanion extends UpdateCompanion<AuthSessionRow> {
     Expression<String>? tokenHash,
     Expression<String>? ipAddress,
     Expression<String>? userAgent,
+    Expression<DateTime>? invalidatedAt,
     Expression<DateTime>? expiresAt,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
@@ -966,6 +1016,7 @@ class AuthSessionsCompanion extends UpdateCompanion<AuthSessionRow> {
       if (tokenHash != null) 'token_hash': tokenHash,
       if (ipAddress != null) 'ip_address': ipAddress,
       if (userAgent != null) 'user_agent': userAgent,
+      if (invalidatedAt != null) 'invalidated_at': invalidatedAt,
       if (expiresAt != null) 'expires_at': expiresAt,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
@@ -979,6 +1030,7 @@ class AuthSessionsCompanion extends UpdateCompanion<AuthSessionRow> {
     Value<String>? tokenHash,
     Value<String>? ipAddress,
     Value<String>? userAgent,
+    Value<DateTime?>? invalidatedAt,
     Value<DateTime>? expiresAt,
     Value<DateTime>? createdAt,
     Value<DateTime>? updatedAt,
@@ -990,6 +1042,7 @@ class AuthSessionsCompanion extends UpdateCompanion<AuthSessionRow> {
       tokenHash: tokenHash ?? this.tokenHash,
       ipAddress: ipAddress ?? this.ipAddress,
       userAgent: userAgent ?? this.userAgent,
+      invalidatedAt: invalidatedAt ?? this.invalidatedAt,
       expiresAt: expiresAt ?? this.expiresAt,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
@@ -1015,6 +1068,9 @@ class AuthSessionsCompanion extends UpdateCompanion<AuthSessionRow> {
     if (userAgent.present) {
       map['user_agent'] = Variable<String>(userAgent.value);
     }
+    if (invalidatedAt.present) {
+      map['invalidated_at'] = Variable<DateTime>(invalidatedAt.value);
+    }
     if (expiresAt.present) {
       map['expires_at'] = Variable<DateTime>(expiresAt.value);
     }
@@ -1038,6 +1094,7 @@ class AuthSessionsCompanion extends UpdateCompanion<AuthSessionRow> {
           ..write('tokenHash: $tokenHash, ')
           ..write('ipAddress: $ipAddress, ')
           ..write('userAgent: $userAgent, ')
+          ..write('invalidatedAt: $invalidatedAt, ')
           ..write('expiresAt: $expiresAt, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
@@ -1679,13 +1736,12 @@ abstract class _$Database extends GeneratedDatabase {
     SqlDialect.postgres:
         'CREATE INDEX sessions_user_id_idx ON auth_sessions (user_id)',
   });
-  late final Index sessionsRefreshTokenIdx =
-      Index.byDialect('sessions_refresh_token_idx', {
-        SqlDialect.sqlite:
-            'CREATE INDEX sessions_refresh_token_idx ON auth_sessions ()',
-        SqlDialect.postgres:
-            'CREATE INDEX sessions_refresh_token_idx ON auth_sessions ()',
-      });
+  late final Index sessionsTokenIdx = Index.byDialect('sessions_token_idx', {
+    SqlDialect.sqlite:
+        'CREATE INDEX sessions_token_idx ON auth_sessions (token_hash)',
+    SqlDialect.postgres:
+        'CREATE INDEX sessions_token_idx ON auth_sessions (token_hash)',
+  });
   late final Index codesUserIdIdx = Index.byDialect('codes_user_id_idx', {
     SqlDialect.sqlite: 'CREATE INDEX codes_user_id_idx ON auth_codes (user_id)',
     SqlDialect.postgres:
@@ -1704,7 +1760,7 @@ abstract class _$Database extends GeneratedDatabase {
     authSessions,
     authCodes,
     sessionsUserIdIdx,
-    sessionsRefreshTokenIdx,
+    sessionsTokenIdx,
     codesUserIdIdx,
     codesHashIdx,
   ];
@@ -2189,6 +2245,7 @@ typedef $$AuthSessionsTableCreateCompanionBuilder =
       required String tokenHash,
       required String ipAddress,
       required String userAgent,
+      Value<DateTime?> invalidatedAt,
       required DateTime expiresAt,
       required DateTime createdAt,
       required DateTime updatedAt,
@@ -2201,6 +2258,7 @@ typedef $$AuthSessionsTableUpdateCompanionBuilder =
       Value<String> tokenHash,
       Value<String> ipAddress,
       Value<String> userAgent,
+      Value<DateTime?> invalidatedAt,
       Value<DateTime> expiresAt,
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
@@ -2256,6 +2314,11 @@ class $$AuthSessionsTableFilterComposer
 
   ColumnFilters<String> get userAgent => $composableBuilder(
     column: $table.userAgent,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get invalidatedAt => $composableBuilder(
+    column: $table.invalidatedAt,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -2327,6 +2390,11 @@ class $$AuthSessionsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<DateTime> get invalidatedAt => $composableBuilder(
+    column: $table.invalidatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<DateTime> get expiresAt => $composableBuilder(
     column: $table.expiresAt,
     builder: (column) => ColumnOrderings(column),
@@ -2386,6 +2454,11 @@ class $$AuthSessionsTableAnnotationComposer
 
   GeneratedColumn<String> get userAgent =>
       $composableBuilder(column: $table.userAgent, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get invalidatedAt => $composableBuilder(
+    column: $table.invalidatedAt,
+    builder: (column) => column,
+  );
 
   GeneratedColumn<DateTime> get expiresAt =>
       $composableBuilder(column: $table.expiresAt, builder: (column) => column);
@@ -2453,6 +2526,7 @@ class $$AuthSessionsTableTableManager
                 Value<String> tokenHash = const Value.absent(),
                 Value<String> ipAddress = const Value.absent(),
                 Value<String> userAgent = const Value.absent(),
+                Value<DateTime?> invalidatedAt = const Value.absent(),
                 Value<DateTime> expiresAt = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
@@ -2463,6 +2537,7 @@ class $$AuthSessionsTableTableManager
                 tokenHash: tokenHash,
                 ipAddress: ipAddress,
                 userAgent: userAgent,
+                invalidatedAt: invalidatedAt,
                 expiresAt: expiresAt,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
@@ -2475,6 +2550,7 @@ class $$AuthSessionsTableTableManager
                 required String tokenHash,
                 required String ipAddress,
                 required String userAgent,
+                Value<DateTime?> invalidatedAt = const Value.absent(),
                 required DateTime expiresAt,
                 required DateTime createdAt,
                 required DateTime updatedAt,
@@ -2485,6 +2561,7 @@ class $$AuthSessionsTableTableManager
                 tokenHash: tokenHash,
                 ipAddress: ipAddress,
                 userAgent: userAgent,
+                invalidatedAt: invalidatedAt,
                 expiresAt: expiresAt,
                 createdAt: createdAt,
                 updatedAt: updatedAt,

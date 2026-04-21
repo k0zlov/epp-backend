@@ -73,6 +73,10 @@ class AuthCode extends Entity {
       return Failure(AuthCodeMaxAttemptsReached());
     }
 
+    if (isInvalidated) {
+      return Failure(AuthCodeInvalid());
+    }
+
     if (!isCodeCorrect) {
       attempts++;
       updateTimestamp();
