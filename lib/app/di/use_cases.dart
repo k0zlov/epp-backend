@@ -51,6 +51,7 @@ Future<void> _useCases() async {
       projector: getIt(),
       eventBus: getIt(),
       tokenService: getIt(),
+      notificationService: getIt(),
     ),
   );
 
@@ -60,6 +61,7 @@ Future<void> _useCases() async {
       repository: getIt(),
       projector: getIt(),
       eventBus: getIt(),
+      notificationService: getIt(),
     ),
   );
 
@@ -70,6 +72,9 @@ Future<void> _useCases() async {
       eventBus: getIt(),
       projector: getIt(),
       hashService: getIt(),
+      notificationService: getIt(),
     ),
   );
+
+  _registerLazySingleton(() => GetUserUseCase(unitOfWork: getIt(), repository: getIt()));
 }

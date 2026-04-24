@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'package:epp_backend/shared/application/base/exceptions.dart';
 import 'package:epp_backend/shared/application/ports/logger_service.dart';
-import 'package:epp_backend/shared/presentation/base/presentation_error.dart';
+import 'package:epp_backend/shared/infrastructure/base/presentation_error.dart';
 import 'package:epp_backend/shared/presentation/extensions/request_x.dart';
 import 'package:ruta/ruta.dart';
 

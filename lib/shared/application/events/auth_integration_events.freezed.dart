@@ -1366,7 +1366,7 @@ as List<String>,
 /// @nodoc
 mixin _$AuthSessionRefreshedIntegrationEvent {
 
- String get userId; String get sessionId; String get ipAddress;
+ String get userId; String get sessionId; String get ipAddress; String get accessToken; String get refreshToken;
 /// Create a copy of AuthSessionRefreshedIntegrationEvent
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -1379,16 +1379,16 @@ $AuthSessionRefreshedIntegrationEventCopyWith<AuthSessionRefreshedIntegrationEve
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is AuthSessionRefreshedIntegrationEvent&&super == other&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.sessionId, sessionId) || other.sessionId == sessionId)&&(identical(other.ipAddress, ipAddress) || other.ipAddress == ipAddress));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is AuthSessionRefreshedIntegrationEvent&&super == other&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.sessionId, sessionId) || other.sessionId == sessionId)&&(identical(other.ipAddress, ipAddress) || other.ipAddress == ipAddress)&&(identical(other.accessToken, accessToken) || other.accessToken == accessToken)&&(identical(other.refreshToken, refreshToken) || other.refreshToken == refreshToken));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,super.hashCode,userId,sessionId,ipAddress);
+int get hashCode => Object.hash(runtimeType,super.hashCode,userId,sessionId,ipAddress,accessToken,refreshToken);
 
 @override
 String toString() {
-  return 'AuthSessionRefreshedIntegrationEvent(userId: $userId, sessionId: $sessionId, ipAddress: $ipAddress)';
+  return 'AuthSessionRefreshedIntegrationEvent(userId: $userId, sessionId: $sessionId, ipAddress: $ipAddress, accessToken: $accessToken, refreshToken: $refreshToken)';
 }
 
 
@@ -1399,7 +1399,7 @@ abstract mixin class $AuthSessionRefreshedIntegrationEventCopyWith<$Res>  {
   factory $AuthSessionRefreshedIntegrationEventCopyWith(AuthSessionRefreshedIntegrationEvent value, $Res Function(AuthSessionRefreshedIntegrationEvent) _then) = _$AuthSessionRefreshedIntegrationEventCopyWithImpl;
 @useResult
 $Res call({
- String userId, String sessionId, String ipAddress
+ String userId, String sessionId, String ipAddress, String accessToken, String refreshToken
 });
 
 
@@ -1416,11 +1416,13 @@ class _$AuthSessionRefreshedIntegrationEventCopyWithImpl<$Res>
 
 /// Create a copy of AuthSessionRefreshedIntegrationEvent
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? userId = null,Object? sessionId = null,Object? ipAddress = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? userId = null,Object? sessionId = null,Object? ipAddress = null,Object? accessToken = null,Object? refreshToken = null,}) {
   return _then(_self.copyWith(
 userId: null == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
 as String,sessionId: null == sessionId ? _self.sessionId : sessionId // ignore: cast_nullable_to_non_nullable
 as String,ipAddress: null == ipAddress ? _self.ipAddress : ipAddress // ignore: cast_nullable_to_non_nullable
+as String,accessToken: null == accessToken ? _self.accessToken : accessToken // ignore: cast_nullable_to_non_nullable
+as String,refreshToken: null == refreshToken ? _self.refreshToken : refreshToken // ignore: cast_nullable_to_non_nullable
 as String,
   ));
 }
@@ -1506,10 +1508,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String userId,  String sessionId,  String ipAddress)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String userId,  String sessionId,  String ipAddress,  String accessToken,  String refreshToken)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _AuthSessionRefreshedIntegrationEvent() when $default != null:
-return $default(_that.userId,_that.sessionId,_that.ipAddress);case _:
+return $default(_that.userId,_that.sessionId,_that.ipAddress,_that.accessToken,_that.refreshToken);case _:
   return orElse();
 
 }
@@ -1527,10 +1529,10 @@ return $default(_that.userId,_that.sessionId,_that.ipAddress);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String userId,  String sessionId,  String ipAddress)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String userId,  String sessionId,  String ipAddress,  String accessToken,  String refreshToken)  $default,) {final _that = this;
 switch (_that) {
 case _AuthSessionRefreshedIntegrationEvent():
-return $default(_that.userId,_that.sessionId,_that.ipAddress);case _:
+return $default(_that.userId,_that.sessionId,_that.ipAddress,_that.accessToken,_that.refreshToken);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -1547,10 +1549,10 @@ return $default(_that.userId,_that.sessionId,_that.ipAddress);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String userId,  String sessionId,  String ipAddress)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String userId,  String sessionId,  String ipAddress,  String accessToken,  String refreshToken)?  $default,) {final _that = this;
 switch (_that) {
 case _AuthSessionRefreshedIntegrationEvent() when $default != null:
-return $default(_that.userId,_that.sessionId,_that.ipAddress);case _:
+return $default(_that.userId,_that.sessionId,_that.ipAddress,_that.accessToken,_that.refreshToken);case _:
   return null;
 
 }
@@ -1562,12 +1564,14 @@ return $default(_that.userId,_that.sessionId,_that.ipAddress);case _:
 @JsonSerializable()
 
 class _AuthSessionRefreshedIntegrationEvent extends AuthSessionRefreshedIntegrationEvent {
-   _AuthSessionRefreshedIntegrationEvent({required this.userId, required this.sessionId, required this.ipAddress}): super._();
+   _AuthSessionRefreshedIntegrationEvent({required this.userId, required this.sessionId, required this.ipAddress, required this.accessToken, required this.refreshToken}): super._();
   factory _AuthSessionRefreshedIntegrationEvent.fromJson(Map<String, dynamic> json) => _$AuthSessionRefreshedIntegrationEventFromJson(json);
 
 @override final  String userId;
 @override final  String sessionId;
 @override final  String ipAddress;
+@override final  String accessToken;
+@override final  String refreshToken;
 
 /// Create a copy of AuthSessionRefreshedIntegrationEvent
 /// with the given fields replaced by the non-null parameter values.
@@ -1582,16 +1586,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AuthSessionRefreshedIntegrationEvent&&super == other&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.sessionId, sessionId) || other.sessionId == sessionId)&&(identical(other.ipAddress, ipAddress) || other.ipAddress == ipAddress));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AuthSessionRefreshedIntegrationEvent&&super == other&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.sessionId, sessionId) || other.sessionId == sessionId)&&(identical(other.ipAddress, ipAddress) || other.ipAddress == ipAddress)&&(identical(other.accessToken, accessToken) || other.accessToken == accessToken)&&(identical(other.refreshToken, refreshToken) || other.refreshToken == refreshToken));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,super.hashCode,userId,sessionId,ipAddress);
+int get hashCode => Object.hash(runtimeType,super.hashCode,userId,sessionId,ipAddress,accessToken,refreshToken);
 
 @override
 String toString() {
-  return 'AuthSessionRefreshedIntegrationEvent(userId: $userId, sessionId: $sessionId, ipAddress: $ipAddress)';
+  return 'AuthSessionRefreshedIntegrationEvent(userId: $userId, sessionId: $sessionId, ipAddress: $ipAddress, accessToken: $accessToken, refreshToken: $refreshToken)';
 }
 
 
@@ -1602,7 +1606,7 @@ abstract mixin class _$AuthSessionRefreshedIntegrationEventCopyWith<$Res> implem
   factory _$AuthSessionRefreshedIntegrationEventCopyWith(_AuthSessionRefreshedIntegrationEvent value, $Res Function(_AuthSessionRefreshedIntegrationEvent) _then) = __$AuthSessionRefreshedIntegrationEventCopyWithImpl;
 @override @useResult
 $Res call({
- String userId, String sessionId, String ipAddress
+ String userId, String sessionId, String ipAddress, String accessToken, String refreshToken
 });
 
 
@@ -1619,11 +1623,13 @@ class __$AuthSessionRefreshedIntegrationEventCopyWithImpl<$Res>
 
 /// Create a copy of AuthSessionRefreshedIntegrationEvent
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? userId = null,Object? sessionId = null,Object? ipAddress = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? userId = null,Object? sessionId = null,Object? ipAddress = null,Object? accessToken = null,Object? refreshToken = null,}) {
   return _then(_AuthSessionRefreshedIntegrationEvent(
 userId: null == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
 as String,sessionId: null == sessionId ? _self.sessionId : sessionId // ignore: cast_nullable_to_non_nullable
 as String,ipAddress: null == ipAddress ? _self.ipAddress : ipAddress // ignore: cast_nullable_to_non_nullable
+as String,accessToken: null == accessToken ? _self.accessToken : accessToken // ignore: cast_nullable_to_non_nullable
+as String,refreshToken: null == refreshToken ? _self.refreshToken : refreshToken // ignore: cast_nullable_to_non_nullable
 as String,
   ));
 }

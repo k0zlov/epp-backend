@@ -11,5 +11,4 @@ Future<void> _listeners() async {
   _registerSingleton(UserLoggedOutListener(eventBus: getIt()));
   _registerSingleton(UserPasswordResetListener(eventBus: getIt()));
   _registerSingleton(UserSignedUpListener(eventBus: getIt()));
-  _registerSingleton(UserLoggedOutIntegrationListener(eventBus: getIt(), wsManager: getIt()));
 }

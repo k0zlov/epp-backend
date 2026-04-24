@@ -11,10 +11,11 @@ Future<void> _controllers() async {
       logoutUseCase: getIt(),
       refreshSessionUseCase: getIt(),
       confirmPasswordResetUseCase: getIt(),
+      getUserUseCase: getIt(),
     ),
   );
 }
 
 Future<void> _wsControllers() async {
-  _registerSingleton(UserWsController(manager: getIt()));
+  // _registerSingleton(UserWsController(notificationSubscriber: getIt()));
 }

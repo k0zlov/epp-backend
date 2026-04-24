@@ -1,6 +1,8 @@
 import 'package:epp_backend/contexts/auth/application/application.dart';
+import 'package:epp_backend/contexts/auth/application/queries/get_user_use_case.dart';
 import 'package:epp_backend/contexts/auth/presentation/errors/auth_failure_mapper.dart';
 import 'package:epp_backend/shared/domain/base/failure.dart';
+import 'package:epp_backend/shared/infrastructure/infrastructure.dart';
 import 'package:epp_backend/shared/presentation/presentation.dart';
 import 'package:ruta/ruta.dart';
 
@@ -14,6 +16,7 @@ class AuthController {
     required this.loginUseCase,
     required this.confirmEmailUseCase,
     required this.sendAuthCodeUseCase,
+    required this.getUserUseCase,
   });
 
   final SignUpUseCase signUpUseCase;
@@ -23,6 +26,7 @@ class AuthController {
   final LogoutUseCase logoutUseCase;
   final RefreshSessionUseCase refreshSessionUseCase;
   final ConfirmPasswordResetUseCase confirmPasswordResetUseCase;
+  final GetUserUseCase getUserUseCase;
   final AuthFailureMapper failureMapper;
 
   Response _ifLeft(DomainFailureBase failure) {
@@ -94,5 +98,12 @@ class AuthController {
     final result = await confirmPasswordResetUseCase(params);
 
     return result.fold(_ifLeft, (_) => Response());
+  }
+
+  Future<Response> getUser(Request request) async {
+    final params = GetUserParams(userId: request.clientInfo.userId!);
+    final result = await getUserUseCase(params);
+
+    return result.fold(_ifLeft, (user) => Response.json(body: user));
   }
 }

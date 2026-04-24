@@ -79,9 +79,7 @@ class User extends Aggregate {
   }
 
   Result<AuthCode> findCode({required AuthCodeType type}) {
-    final AuthCode? code = _codes.firstWhereOrNull(
-      (e) => e.canBeUsed && e.type == AuthCodeType.emailVerification,
-    );
+    final AuthCode? code = _codes.firstWhereOrNull((e) => e.canBeUsed && e.type == type);
 
     if (code == null) {
       return Failure(AuthCodeNotFound());

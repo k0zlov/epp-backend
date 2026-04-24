@@ -19,6 +19,7 @@ class SharedTestBench<T> {
   final eventBus = MockEventBus();
   final tokenService = MockTokenService();
   final mailService = MockMailService();
+  final notificationService = MockNotificationService();
 
   final String tIpAddress = '127.0.0.1';
   final String tUserAgent = 'Dart Test';
@@ -29,6 +30,13 @@ class SharedTestBench<T> {
     registerFallbackValue(Duration.zero);
     registerFallbackValue(TokenType.access);
     registerFallbackValue(const TokenPayload(userId: '', sessionId: ''));
+    registerFallbackValue(const NotificationTopic(scope: NotificationScope.system));
+    registerFallbackValue(
+      NotificationMessage.event(
+        topic: const NotificationTopic(scope: NotificationScope.system),
+        title: NotificationEvent.systemError,
+      ),
+    );
   }
 
   @protected
@@ -52,6 +60,10 @@ class SharedTestBench<T> {
 
     when(() => tokenService.accessTokenExpiresIn).thenReturn(const Duration(minutes: 30));
     when(() => tokenService.refreshTokenExpiresIn).thenReturn(const Duration(days: 15));
+    when(() => notificationService.send(any())).thenReturn(null);
+    when(() => notificationService.sendAll(any())).thenReturn(null);
+    when(() => notificationService.closeSession(any())).thenAnswer((_) async {});
+    when(() => notificationService.closeUser(any())).thenAnswer((_) async {});
   }
 
   List<DomainEvent> expectEventsSynchronized() {

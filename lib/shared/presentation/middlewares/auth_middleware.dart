@@ -1,6 +1,6 @@
 import 'package:epp_backend/shared/application/base/token_payload.dart';
 import 'package:epp_backend/shared/application/ports/token_service.dart';
-import 'package:epp_backend/shared/presentation/base/client_info.dart';
+import 'package:epp_backend/shared/infrastructure/base/client_info.dart';
 import 'package:epp_backend/shared/presentation/extensions/request_x.dart';
 import 'package:ruta/ruta.dart';
 import 'package:uuid/v4.dart';

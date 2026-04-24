@@ -22,6 +22,7 @@ abstract class ConfirmPasswordResetParams with _$ConfirmPasswordResetParams {
 
 class ConfirmPasswordResetUseCase extends UseCase<void, ConfirmPasswordResetParams> {
   const ConfirmPasswordResetUseCase({
+    required this.notificationService,
     required this.unitOfWork,
     required this.repository,
     required this.eventBus,
@@ -34,13 +35,18 @@ class ConfirmPasswordResetUseCase extends UseCase<void, ConfirmPasswordResetPara
   final EventBus eventBus;
   final EventProjector projector;
   final HashService hashService;
+  final NotificationService notificationService;
 
   @override
-  Future<Result<void>> call(ConfirmPasswordResetParams params) {
-    return unitOfWork.execute(() async {
+  Future<Result<void>> call(ConfirmPasswordResetParams params) async {
+    late final String userId;
+
+    final Result<void> result = await unitOfWork.execute(() async {
       final User? user = await repository.getUserByEmail(params.email);
 
       if (user == null) return Failure(UserNotFound());
+
+      userId = user.id;
 
       final codeResult = user.findCode(type: AuthCodeType.passwordReset);
       if (codeResult.isFailure) return codeResult;
@@ -58,8 +64,20 @@ class ConfirmPasswordResetUseCase extends UseCase<void, ConfirmPasswordResetPara
 
       await projector.projectAll(user.events);
       eventBus.publishAll(user.events);
-
       return result;
     });
+
+    if (result.isSuccess) {
+      notificationService.send(
+        NotificationMessage.event(
+          topic: NotificationTopic(scope: NotificationScope.user, id: userId),
+          title: NotificationEvent.authLogout,
+        ),
+      );
+
+      await notificationService.closeUser(userId);
+    }
+
+    return result;
   }
 }

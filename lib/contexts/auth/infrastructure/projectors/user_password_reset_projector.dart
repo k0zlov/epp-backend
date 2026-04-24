@@ -15,5 +15,15 @@ class UserPasswordResetProjector extends ProjectionHandler<UserPasswordResetEven
     await db.authCodes.updateWhereSameKey(
       AuthCodeRowMapper.fromDomain(event.code, userId: event.user.id),
     );
+
+    await db.batch((batch) {
+      for (final session in event.sessions) {
+        batch.update(
+          db.authSessions,
+          AuthSessionRowMapper.fromDomain(session, userId: event.user.id),
+          where: (t) => t.id.equals(session.id),
+        );
+      }
+    });
   }
 }

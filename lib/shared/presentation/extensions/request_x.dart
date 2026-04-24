@@ -1,4 +1,4 @@
-import 'package:epp_backend/shared/presentation/base/client_info.dart';
+import 'package:epp_backend/shared/infrastructure/base/client_info.dart';
 import 'package:ruta/ruta.dart';
 
 extension RequestX on Request {

@@ -1,9 +1,10 @@
 import 'package:drift_postgres/drift_postgres.dart';
 import 'package:epp_backend/app/database/database.dart';
 import 'package:epp_backend/app/extensions/dot_env.dart';
+import 'package:epp_backend/contexts/auth/application/queries/get_user_use_case.dart';
 import 'package:epp_backend/contexts/auth/auth.dart';
-import 'package:epp_backend/contexts/auth/presentation/listeners/user_logged_out_listener.dart';
 import 'package:epp_backend/shared/application/application.dart';
+import 'package:epp_backend/shared/application/ports/notification_service.dart';
 import 'package:epp_backend/shared/infrastructure/infrastructure.dart';
 import 'package:epp_backend/shared/presentation/presentation.dart';
 
@@ -37,9 +38,9 @@ final GetIt getIt = GetIt.instance;
 Future<void> registerDependencies() async {
   await _database();
   await _ports();
+  await _wsManager();
   await _projector();
   await _middlewares();
-  await _wsManager();
   await _useCases();
   await _failureMappers();
   await _controllers();

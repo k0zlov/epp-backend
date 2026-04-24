@@ -86,4 +86,12 @@ class AuthRoute extends Route {
       ],
     );
   }
+
+  Endpoint get getUser {
+    return Endpoint.get(
+      path: 'user',
+      middlewares: [RequireAuthMiddleware()],
+      handler: controller.getUser,
+    );
+  }
 }

@@ -1,5 +1,5 @@
 import 'package:epp_backend/shared/domain/base/failure.dart';
-import 'package:epp_backend/shared/presentation/base/presentation_error.dart';
+import 'package:epp_backend/shared/infrastructure/base/presentation_error.dart';
 
 typedef FailurePresentation = (int statusCode, String message);
 

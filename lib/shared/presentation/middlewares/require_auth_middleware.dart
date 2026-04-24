@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:epp_backend/shared/infrastructure/base/presentation_error.dart';
 import 'package:epp_backend/shared/presentation/presentation.dart';
 import 'package:ruta/ruta.dart';
 

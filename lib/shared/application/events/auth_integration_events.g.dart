@@ -88,6 +88,8 @@ _$AuthSessionRefreshedIntegrationEventFromJson(Map<String, dynamic> json) =>
       userId: json['userId'] as String,
       sessionId: json['sessionId'] as String,
       ipAddress: json['ipAddress'] as String,
+      accessToken: json['accessToken'] as String,
+      refreshToken: json['refreshToken'] as String,
     );
 
 Map<String, dynamic> _$AuthSessionRefreshedIntegrationEventToJson(
@@ -96,6 +98,8 @@ Map<String, dynamic> _$AuthSessionRefreshedIntegrationEventToJson(
   'userId': instance.userId,
   'sessionId': instance.sessionId,
   'ipAddress': instance.ipAddress,
+  'accessToken': instance.accessToken,
+  'refreshToken': instance.refreshToken,
 };
 
 _AuthTokenReuseDetectedIntegrationEvent

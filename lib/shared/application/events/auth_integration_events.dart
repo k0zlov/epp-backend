@@ -83,6 +83,8 @@ abstract class AuthSessionRefreshedIntegrationEvent extends IntegrationEvent
     required String userId,
     required String sessionId,
     required String ipAddress,
+    required String accessToken,
+    required String refreshToken,
   }) = _AuthSessionRefreshedIntegrationEvent;
 
   AuthSessionRefreshedIntegrationEvent._();

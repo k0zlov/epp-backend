@@ -9,10 +9,12 @@ part of 'tokens_view.dart';
 _TokensView _$TokensViewFromJson(Map<String, dynamic> json) => _TokensView(
   accessToken: json['accessToken'] as String,
   refreshToken: json['refreshToken'] as String,
+  sessionId: json['sessionId'] as String,
 );
 
 Map<String, dynamic> _$TokensViewToJson(_TokensView instance) =>
     <String, dynamic>{
       'accessToken': instance.accessToken,
       'refreshToken': instance.refreshToken,
+      'sessionId': instance.sessionId,
     };

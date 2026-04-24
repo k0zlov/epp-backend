@@ -12,3 +12,5 @@ class MockEventBus extends Mock implements EventBus {}
 class MockTokenService extends Mock implements TokenService {}
 
 class MockMailService extends Mock implements MailService {}
+
+class MockNotificationService extends Mock implements NotificationService {}

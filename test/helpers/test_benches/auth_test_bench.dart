@@ -10,7 +10,13 @@ class AuthTestBench<T> extends SharedTestBench<T> {
   final String tPassword = 'password123';
   final String tHash = 'hashed_password';
   final String tUserId = 'user_123';
+  final String tSessionId = 'session_123';
   final String tDisplayName = 'Test User';
+
+  final String tOldRefreshToken = 'old_refresh_token';
+  final String tNewRefreshToken = 'new_refresh_token';
+  final String tNewAccessToken = 'new_access_token';
+  final String tNewHash = 'new_hashed_password';
 
   User get tUser => User(
     id: tUserId,

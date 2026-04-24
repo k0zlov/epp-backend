@@ -86,7 +86,13 @@ class LoginUseCase extends UseCase<TokensView, LoginParams> {
           type: TokenType.access,
         );
 
-        return Success(TokensView(accessToken: accessToken, refreshToken: refreshToken));
+        return Success(
+          TokensView(
+            accessToken: accessToken,
+            refreshToken: refreshToken,
+            sessionId: sessionId,
+          ),
+        );
       });
     });
   }

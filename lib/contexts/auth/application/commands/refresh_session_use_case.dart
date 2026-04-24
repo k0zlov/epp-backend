@@ -1,7 +1,6 @@
 import 'package:epp_backend/contexts/auth/application/application.dart';
 import 'package:epp_backend/contexts/auth/domain/domain.dart';
 import 'package:epp_backend/shared/application/application.dart';
-import 'package:epp_backend/shared/application/base/token_payload.dart';
 import 'package:epp_backend/shared/domain/base/result.dart';
 import 'package:epp_backend/shared/infrastructure/extensions/either_x.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
@@ -23,6 +22,7 @@ abstract class RefreshSessionParams with _$RefreshSessionParams {
 
 class RefreshSessionUseCase extends UseCase<TokensView, RefreshSessionParams> {
   const RefreshSessionUseCase({
+    required this.notificationService,
     required this.tokenService,
     required this.unitOfWork,
     required this.repository,
@@ -37,6 +37,7 @@ class RefreshSessionUseCase extends UseCase<TokensView, RefreshSessionParams> {
   final EventBus eventBus;
   final EventProjector projector;
   final HashService hashService;
+  final NotificationService notificationService;
 
   @override
   Future<Result<TokensView>> call(RefreshSessionParams params) async {
@@ -47,7 +48,7 @@ class RefreshSessionUseCase extends UseCase<TokensView, RefreshSessionParams> {
     final String sessionId = payload.sessionId;
     final String userId = payload.userId;
 
-    return unitOfWork.execute(
+    final Result<TokensView> result = await unitOfWork.execute(
       errorMessage: 'Failed to refresh session ($sessionId) of user ($userId)',
       () async {
         final User? user = await repository.getUserById(userId);
@@ -63,7 +64,7 @@ class RefreshSessionUseCase extends UseCase<TokensView, RefreshSessionParams> {
         final bool isTokenValid = await hashService.verify(params.refreshToken, session.tokenHash);
 
         final String newRefreshToken = tokenService.issue(
-          payload: TokenPayload(userId: user.id, sessionId: sessionId),
+          payload: TokenPayload(userId: userId, sessionId: sessionId),
           type: TokenType.refresh,
         );
 
@@ -81,20 +82,33 @@ class RefreshSessionUseCase extends UseCase<TokensView, RefreshSessionParams> {
         await projector.projectAll(user.events);
         eventBus.publishAll(user.events);
 
-        return result.fold(Failure.new, (_) {
-          final String accessToken = tokenService.issue(
-            payload: TokenPayload(userId: user.id, sessionId: sessionId),
-            type: TokenType.access,
-          );
+        if (result.isFailure) return Failure(result.getFailure);
 
-          return Success(
-            TokensView(
-              accessToken: accessToken,
-              refreshToken: newRefreshToken,
-            ),
-          );
-        });
+        final String accessToken = tokenService.issue(
+          payload: TokenPayload(userId: userId, sessionId: sessionId),
+          type: TokenType.access,
+        );
+
+        final TokensView view = TokensView(
+          accessToken: accessToken,
+          refreshToken: newRefreshToken,
+          sessionId: sessionId,
+        );
+
+        return Success(view);
       },
     );
+
+    if (result.isSuccess) {
+      notificationService.send(
+        NotificationMessage.event(
+          topic: NotificationTopic(scope: NotificationScope.session, id: sessionId),
+          title: NotificationEvent.authTokenRefreshed,
+          payload: result.getSuccess.toJson(),
+        ),
+      );
+    }
+
+    return result;
   }
 }

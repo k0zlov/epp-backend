@@ -49,7 +49,7 @@ class AuthCode extends Entity {
 
   bool get isMaxAttemptsReached => attempts >= 5;
 
-  bool get isExpired => DateTime.now().isAfter(expiresAt);
+  bool get isExpired => DateTime.timestamp().isAfter(expiresAt);
 
   bool get canBeUsed => !isExpired && !isUsed && !isMaxAttemptsReached && !isInvalidated;
 
@@ -77,11 +77,12 @@ class AuthCode extends Entity {
       return Failure(AuthCodeInvalid());
     }
 
-    if (!isCodeCorrect) {
-      attempts++;
-      updateTimestamp();
+    attempts++;
+    updateTimestamp();
 
+    if (!isCodeCorrect) {
       if (isMaxAttemptsReached) {
+        invalidate();
         return Failure(AuthCodeMaxAttemptsReached());
       }
 
