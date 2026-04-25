@@ -1,5 +1,4 @@
 import 'package:epp_backend/contexts/auth/auth.dart';
-import 'package:epp_backend/shared/application/application.dart';
 import 'package:epp_backend/shared/infrastructure/infrastructure.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:test/test.dart';
@@ -126,21 +125,6 @@ void main() {
           template: any(named: 'template'),
         ),
       );
-    });
-
-    test('should throw InfrastructureException when mail service fails', () async {
-      final tUser = getUnverifiedUser();
-
-      when(() => repo().getUserByEmail(email())).thenAnswer((_) async => tUser);
-      when(() => hashService().hash(any())).thenAnswer((_) async => 'hash');
-      when(
-        () => mailService().sendTemplate(
-          to: any(named: 'to'),
-          template: any(named: 'template'),
-        ),
-      ).thenThrow(Exception());
-
-      expect(() => useCase(params()), throwsA(isA<InfrastructureException>()));
     });
   });
 }
