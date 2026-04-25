@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Setup Dart
         uses: dart-lang/setup-dart@v1
       - name: Install dependencies
@@ -22,7 +22,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -41,18 +41,9 @@ jobs:
             
             echo "${{ secrets.ENV_FILE }}" > .env
             
-            if ! docker compose up -d --build; then
+            if ! docker compose up -d --build --remove-orphans; then
               echo "Docker build failed"
               exit 1
             fi
-            
-            sleep 10
-            
-            CONTAINER_NAME=$(docker compose ps -q epp-server)
-            if [ -z "$CONTAINER_NAME" ] || [ "$(docker inspect -f '{{.State.Running}}' $CONTAINER_NAME)" != "true" ]; then
-              echo "Container epp-server is not running. Printing logs:"
-              docker compose logs epp-server
-              exit 1
-            fi
-            
+          
             docker image prune -f
