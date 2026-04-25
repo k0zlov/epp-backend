@@ -1,5 +1,6 @@
 import 'package:epp_backend/app/database/database.dart';
 import 'package:epp_backend/shared/application/application.dart';
+import 'package:epp_backend/shared/application/base/infrastructure_error_code.dart';
 
 class DriftUnitOfWork implements UnitOfWork {
   const DriftUnitOfWork({required this.db});
@@ -14,9 +15,14 @@ class DriftUnitOfWork implements UnitOfWork {
     try {
       return db.transaction<T>(action);
     } on Exception catch (e, st) {
-      if (e is InfrastructureException) rethrow;
+      const InfrastructureErrorCode code = InfrastructureErrorCode.dbInternalError;
 
-      throw InfrastructureException(message: errorMessage, error: e, stackTrace: st);
+      throw InfrastructureException(
+        code: code,
+        message: errorMessage,
+        error: e,
+        stackTrace: st,
+      );
     }
   }
 }

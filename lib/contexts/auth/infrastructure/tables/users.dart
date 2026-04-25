@@ -10,6 +10,8 @@ class Users extends Table {
     VoConverter<Email, String>(fromValue: Email.new, toValue: (vo) => vo.value),
   )();
 
+  TextColumn get displayName => text()();
+
   TextColumn get passwordHash => text()();
 
   BoolColumn get isVerified => boolean()();

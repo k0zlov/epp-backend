@@ -31,7 +31,6 @@ extension TableExtension<TableDsl extends Table, D> on TableInfo<TableDsl, D> {
 
   Future<int> updateWhereSameKey(
     Insertable<D> entity,
-    Expression<bool> Function(TableDsl tbl) filter,
   ) {
     return (update()..whereSamePrimaryKey(entity)).write(entity);
   }

@@ -1,6 +1,5 @@
 import 'package:epp_backend/contexts/auth/application/application.dart';
 import 'package:epp_backend/contexts/auth/domain/domain.dart';
-import 'package:epp_backend/contexts/auth/domain/value_objects/password.dart';
 import 'package:epp_backend/shared/application/application.dart';
 import 'package:epp_backend/shared/domain/domain.dart';
 import 'package:epp_backend/shared/infrastructure/extensions/either_x.dart';
@@ -14,6 +13,7 @@ part 'sign_up_use_case.freezed.dart';
 @freezed
 abstract class SignUpParams with _$SignUpParams {
   const factory SignUpParams({
+    required String displayName,
     required String email,
     required String password,
   }) = _SignUpParams;
@@ -58,14 +58,20 @@ class SignUpUseCase extends UseCase<void, SignUpParams> {
 
         final passwordHash = await hashService.hash(password!.value);
 
-        return User.create(email: email, passwordHash: passwordHash).fold(
-          Failure.new,
-          (user) async {
-            await projector.projectAll(user.events);
-            eventBus.publishAll(user.events);
-            return const Success(null);
-          },
+        final result = User.create(
+          email: email,
+          passwordHash: passwordHash,
+          displayName: params.displayName,
         );
+
+        if (result.isSuccess) {
+          final user = result.getSuccess;
+
+          await projector.projectAll(user.events);
+          eventBus.publishAll(user.events);
+        }
+
+        return result;
       },
     );
   }

@@ -1,56 +1,64 @@
-// import 'package:drift/drift.dart';
-// import 'package:drift/native.dart';
-// import 'package:drift_postgres/drift_postgres.dart';
-// import 'package:epp_backend/app/database/database.dart';
-// import 'package:epp_backend/app/di/dot_env.dart';
-// import 'package:postgres/postgres.dart';
+// import 'package:epp_backend/shared/application/application.dart';
+// import 'package:epp_backend/shared/application/base/metrics_definition.dart';
+// import 'package:epp_backend/shared/infrastructure/adapters/prometheus_metrics_service.dart';
+// import 'package:epp_backend/shared/infrastructure/infrastructure.dart';
+// import 'package:epp_backend/shared/infrastructure/sanitizers/log_sanitizer.dart';
 //
 // void main() async {
-//   final sqliteExecutor = NativeDatabase.memory();
-//   final sqliteDb = Database(sqliteExecutor);
-//   print('Native');
-//   await runDatabaseLogic(sqliteDb);
-//   await sqliteDb.close();
+//   final sanitizer = LogSanitizer();
+//   final logger = ConsoleLoggerService(sanitizer: sanitizer);
+//   final metrics = PrometheusMetricsService();
 //
-//   final postgresExecutor = PgDatabase(
-//     endpoint: Endpoint(
-//       host: env(DotEnvKey.databaseHost),
-//       port: int.parse(env(DotEnvKey.databasePort)),
-//       database: env(DotEnvKey.databaseName),
-//       username: env(DotEnvKey.databaseUsername),
-//       password: env(DotEnvKey.databasePassword),
-//     ),
-//     settings: const ConnectionSettings(sslMode: SslMode.disable),
-//   );
+//   print('--- 1. Logging and PII Test ---');
 //
-//   final pgDb = Database(postgresExecutor);
-//   print('PostgreSQL');
-//   await runDatabaseLogic(pgDb);
-//   await pgDb.close();
-// }
-//
-// Future<void> runDatabaseLogic(Database db) async {
-//   const userId = 'user_uuid_1';
-//
-//   await db
-//       .into(db.users)
-//       .insert(
-//         UsersCompanion.insert(
-//           id: userId,
-//           email: 'user@example.com',
-//           passwordHash: 'hashed_password_string',
-//           isVerified: false,
-//           createdAt: DateTime.timestamp(),
-//         ),
-//       );
-//
-//   await (db.update(db.users)..where((u) => u.id.equals(userId))).write(
-//     UsersCompanion(
-//       updatedAt: Value(DateTime.now()),
-//       isVerified: const Value(true),
+//   logger.info(
+//     'New user registration attempt',
+//     context: const LogContext(
+//       event: 'user_registration',
+//       payload: {'email': 'john.doe@gmail.com', 'password': 'secret_password_123', 'ip': '192.168.1.1'},
 //     ),
 //   );
-//   final user = await (db.select(db.users)..where((u) => u.id.equals(userId))).getSingle();
 //
-//   print(user.toJson());
+//   print('\n--- 2. Metrics Test (Counter) ---');
+//
+//   for (var i = 0; i < 3; i++) {
+//     metrics.increment(
+//       MetricDefinition.httpRequests,
+//       labels: {'path': '/login', 'status': '200'},
+//     );
+//   }
+//   print('Injected 3 login requests into metrics.');
+//
+//   print('\n--- 3. Metrics Test (Gauge) ---');
+//
+//   metrics.setGauge(MetricDefinition.activeSessions, 10);
+//   print('Set active sessions to 10');
+//
+//   metrics.setGauge(MetricDefinition.activeSessions, 9);
+//   print('Set active sessions to 9');
+//
+//   print('\n--- 4. Error Handling Test (Error) ---');
+//
+//   try {
+//     throw Exception('Database connection timeout');
+//   } catch (e, st) {
+//     logger.error(
+//       'Failed to fetch user data',
+//       error: e,
+//       stackTrace: st,
+//       context: const LogContext(event: 'db_error'),
+//     );
+//     metrics.increment(
+//       MetricDefinition.httpErrors,
+//       labels: {'type': 'database'},
+//     );
+//   }
+//
+//   print('\n--- 5. Metrics Export (Prometheus Format) ---');
+//
+//   final report = await metrics.expose();
+//   print('FINAL METRICS REPORT:');
+//   print('-------------------------------------------');
+//   print(report);
+//   print('-------------------------------------------');
 // }

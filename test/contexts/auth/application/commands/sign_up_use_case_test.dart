@@ -5,89 +5,88 @@ import 'package:epp_backend/shared/infrastructure/infrastructure.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:test/test.dart';
 
-import '../../../../shared/shared_mocks.dart';
-import '../../auth_mocks.dart';
+import '../../../../helpers/functions/expect_event.dart';
+import '../../../../helpers/mocks/auth_mocks.dart';
+import '../../../../helpers/mocks/shared_mocks.dart';
+import '../../../../helpers/test_benches/auth_test_bench.dart';
 
 void main() {
+  late AuthTestBench<void> bench;
   late SignUpUseCase useCase;
-  late MockUserRepository repository;
-  late MockHashService hashService;
-  late MockUnitOfWork unitOfWork;
-  late MockEventProjector projector;
-  late MockEventBus eventBus;
 
   setUpAll(() {
-    registerFallbackValue(const SignUpParams(email: '', password: ''));
+    registerFallbackValue(const SignUpParams(email: '', password: '', displayName: ''));
   });
 
   setUp(() {
-    repository = MockUserRepository();
-    hashService = MockHashService();
-    unitOfWork = MockUnitOfWork();
-    projector = MockEventProjector();
-    eventBus = MockEventBus();
+    bench = AuthTestBench<void>();
 
     useCase = SignUpUseCase(
-      repository: repository,
-      hashService: hashService,
-      unitOfWork: unitOfWork,
-      projector: projector,
-      eventBus: eventBus,
+      repository: bench.userRepository,
+      hashService: bench.hashService,
+      unitOfWork: bench.unitOfWork,
+      projector: bench.projector,
+      eventBus: bench.eventBus,
     );
-
-    unitOfWork.mockSuccess<void>();
   });
 
   group('SignUpUseCase Tests', () {
-    const tEmail = 'test@example.com';
-    const tPassword = 'password123A';
-    const tParams = SignUpParams(email: tEmail, password: tPassword);
-    const tHash = 'hashed_password';
+    MockUserRepository repo() => bench.userRepository;
+    MockHashService hashService() => bench.hashService;
+
+    String email() => bench.tEmail;
+    String password() => bench.tPassword;
+    String hash() => bench.tHash;
+    String displayName() => bench.tDisplayName;
+
+    SignUpParams params() => SignUpParams(
+      email: email(),
+      password: password(),
+      displayName: displayName(),
+    );
 
     test('should return ValidationFailures when input is invalid', () async {
-      const invalidParams = SignUpParams(email: 'invalid', password: '123');
+      final invalidParams = SignUpParams(
+        email: 'invalid-email',
+        password: 'short',
+        displayName: displayName(),
+      );
 
       final result = await useCase(invalidParams);
 
       expect(result.isFailure, isTrue);
-      expect(result.failure, isA<ValidationFailures>());
-      verifyNever(() => repository.getUserByEmail(any()));
+      expect(result.getFailure, isA<ValidationFailures>());
+      verifyNever(() => repo().getUserByEmail(any()));
     });
 
     test('should return EmailAlreadyInUse when email exists', () async {
-      when(() => repository.getUserByEmail(any())).thenAnswer(
-        (_) async => User(
-          id: '1',
-          email: const Email(tEmail),
-          passwordHash: tHash,
-          isVerified: true,
-          createdAt: DateTime.now(),
-          updatedAt: DateTime.now(),
-          deletedAt: null,
-        ),
-      );
+      final user = bench.tUser;
 
-      final result = await useCase(tParams);
+      when(() => repo().getUserByEmail(email())).thenAnswer((_) async => user);
+
+      final result = await useCase(params());
 
       expect(result.isFailure, isTrue);
-      expect(result.failure, isA<EmailAlreadyInUse>());
-      verify(() => repository.getUserByEmail(tEmail)).called(1);
-      verifyNever(() => hashService.hash(any()));
+      expect(result.getFailure, isA<EmailAlreadyInUse>());
+      verify(() => repo().getUserByEmail(email())).called(1);
+      verifyNever(() => hashService().hash(any()));
     });
 
-    test('should return Success when data is valid', () async {
-      when(() => repository.getUserByEmail(any())).thenAnswer((_) async => null);
-      when(() => hashService.hash(any())).thenAnswer((_) async => tHash);
-      when(() => projector.projectAll(any())).thenAnswer((_) async => {});
-      when(() => eventBus.publishAll(any())).thenAnswer((_) => {});
+    test('should return Success and emit UserSignedUpEvent when email is available and data is valid', () async {
+      when(() => repo().getUserByEmail(email())).thenAnswer((_) async => null);
+      when(() => hashService().hash(password())).thenAnswer((_) async => hash());
 
-      final result = await useCase(tParams);
+      final result = await useCase(params());
 
       expect(result.isSuccess, isTrue);
-      verify(() => repository.getUserByEmail(tEmail)).called(1);
-      verify(() => hashService.hash(tPassword)).called(1);
-      verify(() => projector.projectAll(any())).called(1);
-      verify(() => eventBus.publishAll(any())).called(1);
+      verify(() => repo().getUserByEmail(email())).called(1);
+      verify(() => hashService().hash(password())).called(1);
+
+      final events = bench.expectEventsSynchronized();
+      final event = expectEvent<UserSignedUpEvent>(events);
+
+      expect(event.user.email.value, equals(email()));
+      expect(event.user.displayName, equals(displayName()));
     });
   });
 }

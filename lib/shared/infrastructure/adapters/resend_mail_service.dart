@@ -1,31 +1,19 @@
-import 'dart:io';
-
 import 'package:dart_resend/dart_resend.dart';
-import 'package:epp_backend/shared/application/ports/mail_service.dart';
+import 'package:epp_backend/shared/application/application.dart';
+import 'package:epp_backend/shared/application/base/infrastructure_error_code.dart';
+import 'package:epp_backend/shared/infrastructure/mixins/mail_template_loader_mixin.dart';
 import 'package:mustache_template/mustache.dart';
-import 'package:path/path.dart' as path;
 
-class ResendMailService implements MailService {
+class ResendMailService with MailTemplateLoaderMixin implements MailService {
   const ResendMailService({
-    required this.templatesPath,
+    required this.templatesFolderPath,
     required this.domainTitle,
     required this.client,
   });
 
   final ResendClient client;
-
   final String domainTitle;
-  final String templatesPath;
-
-  Future<String> _loadTemplate(String name) async {
-    final file = File(path.join(templatesPath, '$name.html'));
-
-    if (!file.existsSync()) {
-      throw Exception('Template $name not found at ${file.path}');
-    }
-
-    return file.readAsString();
-  }
+  final String templatesFolderPath;
 
   @override
   Future<void> send({
@@ -35,27 +23,60 @@ class ResendMailService implements MailService {
     String? html,
     String? from,
   }) async {
-    await client.email.sendEmail(
+    final result = await client.email.sendEmail(
       from: '${from ?? 'no-reply'}@$domainTitle',
       to: to,
       subject: subject,
       text: text,
       html: html,
     );
+
+    await result.fold(
+      onSuccess: (_) {},
+      onFailure: (error, message) {
+        InfrastructureErrorCode code = InfrastructureErrorCode.mailProviderFailure;
+
+        final errorId = error?.id;
+
+        if (errorId == 'rate_limit_exceeded' || errorId == 'daily_quota_exceeded') {
+          code = InfrastructureErrorCode.mailRateLimit;
+        } else if (errorId == 'invalid_from_address' || errorId == 'invalid_to_address') {
+          code = InfrastructureErrorCode.mailInvalidRecipient;
+        }
+
+        throw InfrastructureException(
+          code: code,
+          message: message ?? 'Resend service failed to send email',
+          error: errorId,
+        );
+      },
+    );
   }
 
   @override
   Future<void> sendTemplate({
     required List<String> to,
-    required String subject,
-    required String templateName,
-    Map<String, dynamic> vars = const {},
-    String? from,
+    required MailTemplate template,
+    String from = 'no-reply',
   }) async {
-    final String source = await _loadTemplate(templateName);
+    try {
+      final Template t = await loadTemplate(
+        templateName: template.templateName,
+        templatesFolderPath: templatesFolderPath,
+      );
 
-    final String html = Template(source).renderString(vars);
+      final String html = t.renderString({...template.vars, 'subject': template.subject});
 
-    return send(to: to, subject: subject, from: from, html: html);
+      return await send(to: to, subject: template.subject, from: from, html: html);
+    } on InfrastructureException {
+      rethrow;
+    } on Exception catch (e, st) {
+      throw InfrastructureException(
+        code: InfrastructureErrorCode.internalError,
+        message: 'Failed to load or render mail template',
+        error: e,
+        stackTrace: st,
+      );
+    }
   }
 }

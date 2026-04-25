@@ -1,4 +1,4 @@
-import 'package:epp_backend/shared/presentation/base/client_info.dart';
+import 'package:epp_backend/shared/infrastructure/base/client_info.dart';
 import 'package:ruta/ruta.dart';
 
 extension RequestX on Request {
@@ -11,16 +11,6 @@ extension RequestX on Request {
 
     return clientInfo;
   }
-
-  String? get userId {
-    final Object? userId = context['userId'];
-
-    if (userId is! String) return null;
-
-    return userId;
-  }
-
-  bool get isAuthorized => userId != null;
 
   String? get ip {
     return connectionInfo.remoteAddress.address;

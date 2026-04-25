@@ -1,0 +1,7 @@
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: 'epp-backend'
+    static_configs:
+      - targets: [ 'epp-server:8080' ]

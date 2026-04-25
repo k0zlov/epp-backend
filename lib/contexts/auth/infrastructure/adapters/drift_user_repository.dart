@@ -13,12 +13,12 @@ class DriftUserRepository implements UserRepository {
     final id = userRow.id;
 
     final results = await Future.wait([
-      db.authTokens.getWhere((tbl) => tbl.userId.equals(id)),
+      db.authCodes.getWhere((tbl) => tbl.userId.equals(id)),
       db.authSessions.getWhere((tbl) => tbl.userId.equals(id)),
     ]);
 
     return userRow.toDomain(
-      tokenRows: results[0] as List<AuthTokenRow>,
+      codeRows: results[0] as List<AuthCodeRow>,
       sessionRows: results[1] as List<AuthSessionRow>,
     );
   }

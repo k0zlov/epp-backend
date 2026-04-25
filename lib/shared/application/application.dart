@@ -1,11 +1,20 @@
 //GENERATED BARREL FILE
 export './base/event_listener.dart';
-export './base/exceptions.dart';
+export './base/infrastructure_exception.dart';
+export './base/integration_event.dart';
+export './base/log_context.dart';
+export './base/mail_template.dart';
+export './base/notification_event.dart';
+export './base/notification_message.dart';
+export './base/notification_scope.dart';
+export './base/token_payload.dart';
 export './base/use_case.dart';
+export './events/auth_integration_events.dart';
 export './ports/event_bus.dart';
 export './ports/event_projector.dart';
 export './ports/hash_service.dart';
 export './ports/logger_service.dart';
 export './ports/mail_service.dart';
+export './ports/notification_service.dart';
 export './ports/token_service.dart';
 export './ports/unit_of_work.dart';

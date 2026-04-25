@@ -3,17 +3,19 @@ import 'package:epp_backend/contexts/auth/infrastructure/tables/users.dart';
 
 @DataClassName('AuthSessionRow')
 @TableIndex(name: 'sessions_user_id_idx', columns: {#userId})
-@TableIndex(name: 'sessions_refresh_token_idx', columns: {#refreshToken})
+@TableIndex(name: 'sessions_token_idx', columns: {#tokenHash})
 class AuthSessions extends Table {
   TextColumn get id => text()();
 
   TextColumn get userId => text().references(Users, #id, onDelete: KeyAction.cascade)();
 
-  TextColumn get refreshToken => text()();
+  TextColumn get tokenHash => text()();
 
   TextColumn get ipAddress => text()();
 
   TextColumn get userAgent => text()();
+
+  DateTimeColumn get invalidatedAt => dateTime().nullable()();
 
   DateTimeColumn get expiresAt => dateTime()();
 

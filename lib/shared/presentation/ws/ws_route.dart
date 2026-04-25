@@ -1,13 +1,13 @@
+import 'package:epp_backend/shared/infrastructure/ws/ws_notification_subscriber.dart';
 import 'package:epp_backend/shared/presentation/extensions/request_x.dart';
-import 'package:epp_backend/shared/presentation/ws/ws_manager.dart';
 import 'package:ruta/annotations.dart';
 import 'package:ruta/ruta.dart';
 
 @rutaRoute
 class WsRoute extends Route {
-  WsRoute({required this.wsManager});
+  WsRoute({required this.wsNotificationSubscriber});
 
-  final WsManager wsManager;
+  final WsNotificationSubscriber wsNotificationSubscriber;
 
   @override
   String get name => 'ws';
@@ -19,7 +19,7 @@ class WsRoute extends Route {
         return wsHandler(
           req,
           onConnection: (channel, subprotocol) {
-            return wsManager.connect(
+            return wsNotificationSubscriber.subscribe(
               clientInfo: req.clientInfo,
               channel: channel,
             );

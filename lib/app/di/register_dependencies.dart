@@ -1,118 +1,56 @@
+import 'package:dart_resend/dart_resend.dart';
 import 'package:drift_postgres/drift_postgres.dart';
 import 'package:epp_backend/app/database/database.dart';
-import 'package:epp_backend/app/di/dot_env.dart';
-import 'package:epp_backend/contexts/auth/application/commands/sign_up_use_case.dart';
+import 'package:epp_backend/app/extensions/dot_env.dart';
+import 'package:epp_backend/contexts/auth/application/queries/get_user_use_case.dart';
 import 'package:epp_backend/contexts/auth/auth.dart';
-import 'package:epp_backend/contexts/auth/infrastructure/projectors/user_signed_up_projector.dart';
-import 'package:epp_backend/contexts/auth/presentation/errors/auth_failure_mapper.dart';
-import 'package:epp_backend/contexts/auth/presentation/rest/auth_controller.dart';
 import 'package:epp_backend/shared/application/application.dart';
+import 'package:epp_backend/shared/application/ports/metrics_service.dart';
+import 'package:epp_backend/shared/infrastructure/adapters/prometheus_metrics_service.dart';
 import 'package:epp_backend/shared/infrastructure/infrastructure.dart';
+import 'package:epp_backend/shared/presentation/middlewares/metrics_middleware.dart';
 import 'package:epp_backend/shared/presentation/presentation.dart';
 
 import 'package:get_it/get_it.dart';
-import 'package:mailer/smtp_server.dart';
 import 'package:postgres/postgres.dart';
 import 'package:ruta/open_api.dart';
+
+part 'listeners.dart';
+
+part 'database.dart';
+
+part 'ports.dart';
+
+part 'projector.dart';
+
+part 'middlewares.dart';
+
+part 'ws_manager.dart';
+
+part 'use_cases.dart';
+
+part 'controllers.dart';
+
+part 'failure_mappers.dart';
+
+part 'open_api_spec.dart';
 
 final GetIt getIt = GetIt.instance;
 
 Future<void> registerDependencies() async {
   await _database();
-  await _services();
-  await _projector();
-  await _repositories();
-  await _middlewares();
+  await _ports();
   await _wsManager();
+  await _projector();
+  await _middlewares();
   await _useCases();
   await _failureMappers();
   await _controllers();
+  await _wsControllers();
+  await _listeners();
   await _routes();
 }
 
-Future<void> _database() async {
-  getIt.registerLazySingleton<Database>(
-    () => Database(
-      PgDatabase(
-        settings: const ConnectionSettings(sslMode: SslMode.disable),
-        endpoint: Endpoint(
-          host: env(DotEnvKey.databaseHost),
-          port: int.parse(env(DotEnvKey.databasePort)),
-          database: env(DotEnvKey.databaseName),
-          username: env(DotEnvKey.databaseUsername),
-          password: env(DotEnvKey.databasePassword),
-        ),
-      ),
-    ),
-  );
-}
+void _registerSingleton<T extends Object>(T instance) => getIt.registerSingleton<T>(instance);
 
-Future<void> _services() async {
-  getIt
-    ..registerLazySingleton<LoggerService>(ConsoleLoggerService.new)
-    ..registerLazySingleton<TokenService>(
-      () => JwtTokenService(refreshKey: env(DotEnvKey.refreshTokenKey), accessKey: env(DotEnvKey.accessTokenKey)),
-    )
-    ..registerLazySingleton<HashService>(BcryptHashService.new)
-    ..registerLazySingleton<UnitOfWork>(() => DriftUnitOfWork(db: getIt()))
-    ..registerLazySingleton<EventBus>(InMemoryEventBus.new)
-    ..registerLazySingleton<MailService>(
-      () => SmtpMailService(
-        templatesPath: 'assets/mail_templates',
-        domainTitle: env(DotEnvKey.domainTitle),
-        server: SmtpServer(env(DotEnvKey.smtpHost), port: int.parse(env(DotEnvKey.smtpPort)), allowInsecure: true),
-      ),
-    );
-}
-
-Future<void> _projector() async {
-  getIt.registerLazySingleton<EventProjector>(
-    () => RegistryEventProjector([
-      UserSignedUpProjector(db: getIt()),
-    ]),
-  );
-}
-
-Future<void> _repositories() async {
-  getIt.registerLazySingleton<UserRepository>(() => DriftUserRepository(db: getIt()));
-}
-
-Future<void> _middlewares() async {
-  getIt
-    ..registerLazySingleton<AuthMiddleware>(() => AuthMiddleware(tokenService: getIt()))
-    ..registerLazySingleton<ErrorMiddleware>(() => ErrorMiddleware(loggerService: getIt()));
-}
-
-Future<void> _wsManager() async {
-  getIt.registerLazySingleton<WsManager>(WsManager.new);
-}
-
-Future<void> _useCases() async {
-  getIt.registerLazySingleton(
-    () => SignUpUseCase(
-      projector: getIt(),
-      repository: getIt(),
-      unitOfWork: getIt(),
-      hashService: getIt(),
-      eventBus: getIt(),
-    ),
-  );
-}
-
-Future<void> _failureMappers() async {
-  getIt.registerLazySingleton<AuthFailureMapper>(AuthFailureMapper.new);
-}
-
-Future<void> _controllers() async {
-  getIt.registerLazySingleton<AuthController>(() => AuthController(failureMapper: getIt(), signUpUseCase: getIt()));
-}
-
-Future<void> _routes() async {
-  getIt
-    ..registerLazySingleton<OpenApiSpec>(
-      () => const OpenApiSpec(
-        info: OpenApiInfo(version: '1.0', title: 'EPP'),
-      ),
-    )
-    ..registerLazySingleton<WsRoute>(() => WsRoute(wsManager: getIt()));
-}
+void _registerLazySingleton<T extends Object>(T Function() factory) => getIt.registerLazySingleton<T>(factory);

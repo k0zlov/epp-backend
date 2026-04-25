@@ -1,14 +1,41 @@
+import 'dart:convert';
+
 import 'package:bcrypt/bcrypt.dart';
-import 'package:epp_backend/shared/application/ports/hash_service.dart';
+import 'package:crypto/crypto.dart';
+import 'package:epp_backend/shared/application/application.dart';
+import 'package:epp_backend/shared/application/base/infrastructure_error_code.dart';
 
 class BcryptHashService implements HashService {
+  String _normalize(String value) {
+    if (value.length <= 72) return value;
+    return sha256.convert(utf8.encode(value)).toString();
+  }
+
   @override
   Future<String> hash(String value) async {
-    return BCrypt.hashpw(value, BCrypt.gensalt());
+    try {
+      return BCrypt.hashpw(_normalize(value), BCrypt.gensalt());
+    } on Exception catch (e, st) {
+      throw InfrastructureException(
+        code: InfrastructureErrorCode.hashServiceFailure,
+        message: 'Failed to hash value using BCrypt',
+        error: e,
+        stackTrace: st,
+      );
+    }
   }
 
   @override
   Future<bool> verify(String value, String hash) async {
-    return BCrypt.checkpw(value, hash);
+    try {
+      return BCrypt.checkpw(_normalize(value), hash);
+    } on Exception catch (e, st) {
+      throw InfrastructureException(
+        code: InfrastructureErrorCode.hashServiceFailure,
+        message: 'Failed to verify BCrypt hash',
+        error: e,
+        stackTrace: st,
+      );
+    }
   }
 }
