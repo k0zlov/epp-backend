@@ -41,7 +41,6 @@ void main() {
       userAgent: bench.tUserAgent,
       createdAt: DateTime.now(),
       expiresAt: DateTime.now().add(const Duration(days: 1)),
-      invalidatedAt: null,
       updatedAt: null,
     );
 

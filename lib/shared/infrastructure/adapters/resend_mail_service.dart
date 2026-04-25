@@ -1,6 +1,6 @@
 import 'package:dart_resend/dart_resend.dart';
-import 'package:epp_backend/shared/application/base/mail_template.dart';
-import 'package:epp_backend/shared/application/ports/mail_service.dart';
+import 'package:epp_backend/shared/application/application.dart';
+import 'package:epp_backend/shared/application/base/infrastructure_error_code.dart';
 import 'package:epp_backend/shared/infrastructure/mixins/mail_template_loader_mixin.dart';
 import 'package:mustache_template/mustache.dart';
 
@@ -12,7 +12,6 @@ class ResendMailService with MailTemplateLoaderMixin implements MailService {
   });
 
   final ResendClient client;
-
   final String domainTitle;
   final String templatesFolderPath;
 
@@ -24,12 +23,33 @@ class ResendMailService with MailTemplateLoaderMixin implements MailService {
     String? html,
     String? from,
   }) async {
-    await client.email.sendEmail(
+    final result = await client.email.sendEmail(
       from: '${from ?? 'no-reply'}@$domainTitle',
       to: to,
       subject: subject,
       text: text,
       html: html,
+    );
+
+    await result.fold(
+      onSuccess: (_) {},
+      onFailure: (error, message) {
+        InfrastructureErrorCode code = InfrastructureErrorCode.mailProviderFailure;
+
+        final errorId = error?.id;
+
+        if (errorId == 'rate_limit_exceeded' || errorId == 'daily_quota_exceeded') {
+          code = InfrastructureErrorCode.mailRateLimit;
+        } else if (errorId == 'invalid_from_address' || errorId == 'invalid_to_address') {
+          code = InfrastructureErrorCode.mailInvalidRecipient;
+        }
+
+        throw InfrastructureException(
+          code: code,
+          message: message ?? 'Resend service failed to send email',
+          error: errorId,
+        );
+      },
     );
   }
 
@@ -39,13 +59,24 @@ class ResendMailService with MailTemplateLoaderMixin implements MailService {
     required MailTemplate template,
     String from = 'no-reply',
   }) async {
-    final Template t = await loadTemplate(
-      templateName: template.templateName,
-      templatesFolderPath: templatesFolderPath,
-    );
+    try {
+      final Template t = await loadTemplate(
+        templateName: template.templateName,
+        templatesFolderPath: templatesFolderPath,
+      );
 
-    final String html = t.renderString({...template.vars, 'subject': template.subject});
+      final String html = t.renderString({...template.vars, 'subject': template.subject});
 
-    return send(to: to, subject: template.subject, from: from, html: html);
+      return await send(to: to, subject: template.subject, from: from, html: html);
+    } on InfrastructureException {
+      rethrow;
+    } on Exception catch (e, st) {
+      throw InfrastructureException(
+        code: InfrastructureErrorCode.internalError,
+        message: 'Failed to load or render mail template',
+        error: e,
+        stackTrace: st,
+      );
+    }
   }
 }

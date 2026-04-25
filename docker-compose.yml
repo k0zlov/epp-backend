@@ -1,5 +1,6 @@
 services:
-  epp-server:
+  epp_server:
+    container_name: epp_server
     build: .
     restart: always
     env_file:
@@ -10,20 +11,33 @@ services:
     expose:
       - "8080"
 
-  epp-db:
+  epp_db:
+    container_name: epp_db
     image: postgres:16-alpine
     restart: always
     environment:
       - POSTGRES_USER=${DATABASE_USERNAME}
       - POSTGRES_PASSWORD=${DATABASE_PASSWORD}
       - POSTGRES_DB=${DATABASE_NAME}
-    ports:
-      - "5432:5432"
+    expose:
+      - "5432"
     volumes:
       - epp_db_data:/var/lib/postgresql/data
     networks:
       - epp_network
+
+  epp_prometheus:
+    container_name: epp_prometheus
+    image: prom/prometheus:latest
+    restart: always
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - epp_prometheus_data:/prometheus
+    networks:
+      - epp_network
       - nginx_network
+    expose:
+      - "9090"
 
 networks:
   nginx_network:
@@ -32,3 +46,4 @@ networks:
 
 volumes:
   epp_db_data:
+  epp_prometheus_data:

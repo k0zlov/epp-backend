@@ -1,5 +1,4 @@
 import 'package:epp_backend/shared/application/application.dart';
-import 'package:epp_backend/shared/application/base/token_payload.dart';
 import 'package:epp_backend/shared/domain/domain.dart';
 import 'package:meta/meta.dart';
 import 'package:mocktail/mocktail.dart';

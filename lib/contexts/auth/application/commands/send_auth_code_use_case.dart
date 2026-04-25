@@ -58,12 +58,7 @@ class SendAuthCodeUseCase extends UseCase<void, SendAuthCodeParams> {
 
         final result = user.createAuthCode(codeHash: codeHash, type: type, expiresAt: codeExpiresAt);
 
-        await projector.projectAll(user.events);
-        eventBus.publishAll(user.events);
-
-        if (result.isFailure) return result;
-
-        try {
+        if (result.isSuccess) {
           await mailService.sendTemplate(
             to: [user.email.value],
             template: AuthCodeTemplate(
@@ -73,15 +68,12 @@ class SendAuthCodeUseCase extends UseCase<void, SendAuthCodeParams> {
               codeExpiresInMinutes: codeExpiresInMinutes,
             ),
           );
-        } on Exception catch (e, st) {
-          throw InfrastructureException(
-            message: 'External mail provider failure while sending ${params.type.name}',
-            error: e,
-            stackTrace: st,
-          );
         }
 
-        return const Success(null);
+        await projector.projectAll(user.events);
+        eventBus.publishAll(user.events);
+
+        return result;
       },
     );
   }

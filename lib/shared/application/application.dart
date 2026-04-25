@@ -1,7 +1,8 @@
 //GENERATED BARREL FILE
 export './base/event_listener.dart';
-export './base/exceptions.dart';
+export './base/infrastructure_exception.dart';
 export './base/integration_event.dart';
+export './base/log_context.dart';
 export './base/mail_template.dart';
 export './base/notification_event.dart';
 export './base/notification_message.dart';

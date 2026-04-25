@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:epp_backend/shared/application/base/notification_message.dart';
-import 'package:epp_backend/shared/application/base/notification_scope.dart';
-import 'package:epp_backend/shared/application/ports/notification_service.dart';
+import 'package:epp_backend/shared/application/application.dart';
+import 'package:epp_backend/shared/application/base/metrics_definition.dart';
+import 'package:epp_backend/shared/application/ports/metrics_service.dart';
 import 'package:epp_backend/shared/infrastructure/base/client_info.dart';
 import 'package:epp_backend/shared/infrastructure/base/presentation_error.dart';
 import 'package:epp_backend/shared/infrastructure/base/ws_client_message.dart';
@@ -13,6 +13,14 @@ import 'package:uuid/v4.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 class WsManager implements NotificationService, WsNotificationSubscriber {
+  WsManager({
+    required this.metricsService,
+    required this.logger,
+  });
+
+  final MetricsService metricsService;
+  final LoggerService logger;
+
   final Map<String, WebSocketChannel> _connections = {};
   final Map<String, ClientInfo> _connectionInfo = {};
   final Map<String, Set<String>> _sessionToConnections = {};
@@ -27,6 +35,10 @@ class WsManager implements NotificationService, WsNotificationSubscriber {
     NotificationScope.system,
   };
 
+  void _updateActiveSessionsMetric() {
+    metricsService.setGauge(MetricDefinition.activeSessions, _connections.length);
+  }
+
   @override
   void registerController(WsController controller) {
     if (_controllers.containsKey(controller.scope)) {
@@ -40,6 +52,16 @@ class WsManager implements NotificationService, WsNotificationSubscriber {
     final String connectionId = const UuidV4().generate();
     _connections[connectionId] = channel;
     _connectionInfo[connectionId] = clientInfo;
+
+    _updateActiveSessionsMetric();
+
+    logger.info(
+      'New WS connection established',
+      context: LogContext(
+        event: 'ws.connected',
+        payload: {'connectionId': connectionId, 'userId': clientInfo.userId},
+      ),
+    );
 
     if (clientInfo.sessionId != null) {
       _sessionToConnections.putIfAbsent(clientInfo.sessionId!, () => {}).add(connectionId);
@@ -60,7 +82,14 @@ class WsManager implements NotificationService, WsNotificationSubscriber {
     channel.stream.listen(
       (rawData) => _handleClientMessage(rawData, connectionId),
       onDone: () => _disconnect(connectionId),
-      onError: (_) => _disconnect(connectionId),
+      onError: (dynamic e) async {
+        logger.error(
+          'WS stream error',
+          error: e,
+          context: LogContext(event: 'ws.error', payload: {'id': connectionId}),
+        );
+        await _disconnect(connectionId);
+      },
     );
   }
 
@@ -145,11 +174,23 @@ class WsManager implements NotificationService, WsNotificationSubscriber {
           _sendError(channel, error, topic: topic);
         } else {
           _internalSubscribe(connectionId: connectionId, topic: topic);
+          logger.info(
+            'WS topic subscribed',
+            context: LogContext(
+              event: 'ws.subscribe',
+              payload: {'connectionId': connectionId, 'topic': topic.scope.name},
+            ),
+          );
         }
       } else if (action == 'unsubscribe') {
         _internalUnsubscribe(connectionId: connectionId, topic: topic);
       }
     } catch (e) {
+      logger.error(
+        'Invalid WS message format',
+        error: e,
+        context: LogContext(event: 'ws.invalid_format', payload: {'data': data}),
+      );
       _sendError(
         channel,
         const PresentationError(
@@ -177,6 +218,16 @@ class WsManager implements NotificationService, WsNotificationSubscriber {
   Future<void> _disconnect(String connectionId, {int? code, String? reason}) async {
     final channel = _connections.remove(connectionId);
     await channel?.sink.close(code, reason);
+
+    _updateActiveSessionsMetric();
+
+    logger.info(
+      'WS connection closed',
+      context: LogContext(
+        event: 'ws.disconnected',
+        payload: {'connectionId': connectionId, 'reason': reason ?? 'unknown'},
+      ),
+    );
 
     final info = _connectionInfo.remove(connectionId);
     if (info != null) {

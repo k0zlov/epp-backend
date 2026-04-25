@@ -1,15 +1,17 @@
+import 'package:dart_resend/dart_resend.dart';
 import 'package:drift_postgres/drift_postgres.dart';
 import 'package:epp_backend/app/database/database.dart';
 import 'package:epp_backend/app/extensions/dot_env.dart';
 import 'package:epp_backend/contexts/auth/application/queries/get_user_use_case.dart';
 import 'package:epp_backend/contexts/auth/auth.dart';
 import 'package:epp_backend/shared/application/application.dart';
-import 'package:epp_backend/shared/application/ports/notification_service.dart';
+import 'package:epp_backend/shared/application/ports/metrics_service.dart';
+import 'package:epp_backend/shared/infrastructure/adapters/prometheus_metrics_service.dart';
 import 'package:epp_backend/shared/infrastructure/infrastructure.dart';
+import 'package:epp_backend/shared/presentation/middlewares/metrics_middleware.dart';
 import 'package:epp_backend/shared/presentation/presentation.dart';
 
 import 'package:get_it/get_it.dart';
-import 'package:mailer/smtp_server.dart';
 import 'package:postgres/postgres.dart';
 import 'package:ruta/open_api.dart';
 

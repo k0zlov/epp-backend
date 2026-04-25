@@ -2,7 +2,6 @@ import 'package:epp_backend/contexts/auth/application/ports/user_repository.dart
 import 'package:epp_backend/contexts/auth/application/view/tokens_view.dart';
 import 'package:epp_backend/contexts/auth/domain/domain.dart';
 import 'package:epp_backend/shared/application/application.dart';
-import 'package:epp_backend/shared/application/base/token_payload.dart';
 import 'package:epp_backend/shared/domain/base/result.dart';
 import 'package:epp_backend/shared/infrastructure/infrastructure.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';

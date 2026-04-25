@@ -1,7 +1,7 @@
 part of 'register_dependencies.dart';
 
 Future<void> _listeners() async {
-  _registerSingleton(AuthCodeCreatedListener(eventBus: getIt()));
+  _registerSingleton(AuthCodeCreatedListener(eventBus: getIt(), logger: getIt(), metrics: getIt()));
   _registerSingleton(AuthSessionRefreshedListener(eventBus: getIt()));
   _registerSingleton(AuthTokenReuseDetectedListener(eventBus: getIt()));
   _registerSingleton(EmailConfirmationFailedListener(eventBus: getIt()));
