@@ -3,6 +3,8 @@ services:
     container_name: epp_server
     build: .
     restart: always
+    depends_on:
+      - epp_db
     env_file:
       - .env
     networks:
