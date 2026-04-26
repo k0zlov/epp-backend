@@ -6,12 +6,12 @@ import 'package:path/path.dart' as path;
 mixin MailTemplateLoaderMixin {
   static final Map<String, Template> _templatesCache = {};
 
-  Future<Template> loadTemplate({required String templateName, required String templatesFolderPath}) async {
+  Future<Template> loadTemplate({required String templateName, required String assetsFolderPath}) async {
     if (_templatesCache.containsKey(templateName)) {
       return _templatesCache[templateName]!;
     }
 
-    final file = File(path.join(templatesFolderPath, '$templateName.html'));
+    final file = File(path.join(assetsFolderPath, 'mail_templates', '$templateName.html'));
 
     if (!file.existsSync()) {
       throw Exception('Template $templateName not found at ${file.path}');

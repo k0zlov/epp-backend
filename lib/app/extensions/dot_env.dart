@@ -4,60 +4,83 @@ import 'package:dotenv/dotenv.dart';
 final DotEnv env = DotEnv(includePlatformEnvironment: true)..load(['.env']);
 
 /// Enum representing all the keys used for environment variables.
-///
-/// Each key maps to a corresponding environment variable in the `.env` file or
-/// system environment. This enum ensures type safety and avoids typos when
-/// accessing environment variables.
 enum DotEnvKey {
-  /// Host for the database.
+  // --- App Config ---
+  /// Application mode (dev, prod).
+  appMode('APP_MODE'),
+
+  /// Application port.
+  appPort('APP_PORT'),
+
+  /// Domain name of the application.
+  domainName('DOMAIN_NAME'),
+
+  /// Base URL for the application.
+  baseUrl('BASE_URL'),
+
+  // --- Security ---
+  /// Secret key for Access Token.
+  accessTokenSecret('ACCESS_TOKEN_SECRET'),
+
+  /// Secret key for Refresh Token.
+  refreshTokenSecret('REFRESH_TOKEN_SECRET'),
+
+  // --- Database ---
   databaseHost('DATABASE_HOST'),
-
-  /// Name of the database.
   databaseName('DATABASE_NAME'),
-
-  /// Password for the database.
   databasePassword('DATABASE_PASSWORD'),
-
-  /// Port for the database.
   databasePort('DATABASE_PORT'),
-
-  /// Username for the database.
   databaseUsername('DATABASE_USERNAME'),
-  accessTokenKey('ACCESS_TOKEN_SECRET'),
-  refreshTokenKey('REFRESH_TOKEN_SECRET'),
-  resendApikey('RESEND_API_KEY'),
-  domainTitle('DOMAIN_TITLE'),
+
+  // --- Mail Services ---
+  /// Active mail service (smtp, resend).
+  mailService('MAIL_SERVICE'),
   smtpHost('SMTP_HOST'),
-  smtpPort('SMTP_PORT')
+  smtpPort('SMTP_PORT'),
+  resendApiKey('RESEND_API_KEY'),
+
+  // --- Assets ---
+  /// Path to assets folder.
+  assetsPath('ASSETS_PATH'),
+
+  // --- Monitoring ---
+  grafanaPassword('GRAFANA_PASSWORD')
   ;
 
   /// The name of the environment variable this key corresponds to.
   const DotEnvKey(this.name);
 
-  /// The key name as a string.
   final String name;
 }
 
-/// Extension on [DotEnv] to simplify access to environment variables using [DotEnvKey].
-///
-/// Provides a callable syntax to retrieve the value of the environment variable
-/// associated with a given [DotEnvKey].
+/// Extension on [DotEnv] to simplify access to environment variables.
 extension DotEnvExtension on DotEnv {
-  /// Retrieves the value of the environment variable associated with [key].
-  ///
-  /// Throws an exception if the variable is not defined in the environment.
-  ///
-  /// Example:
-  /// ```dart
-  /// final version = env(DotEnvKey.version);
-  /// ```
+  /// Retrieves the raw string value for a [DotEnvKey].
   String call(DotEnvKey key) {
     final String name = key.name;
-
     if (!isDefined(name)) {
       throw Exception('Environment variable was not defined: $name');
     }
-
     return getOrElse(name, () => '');
   }
+
+  // --- Helper Getters ---
+
+  bool get useResend => this(DotEnvKey.mailService) == 'resend';
+
+  /// Returns true if the application is running in development mode.
+  bool get isDev => this(DotEnvKey.appMode) == 'dev';
+
+  /// Returns true if the application is running in production mode.
+  bool get isProd => this(DotEnvKey.appMode) == 'prod';
+
+  /// Returns the application port as an integer.
+  int get port => int.parse(this(DotEnvKey.appPort));
+
+  /// Returns the full assets path.
+  /// In prod, it might need to be an absolute path depending on your Docker setup.
+  String get assetsPath => this(DotEnvKey.assetsPath);
+
+  /// Helper to get database port as int.
+  int get dbPort => int.parse(this(DotEnvKey.databasePort));
 }

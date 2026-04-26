@@ -12,6 +12,7 @@ import 'package:epp_backend/shared/presentation/middlewares/metrics_middleware.d
 import 'package:epp_backend/shared/presentation/presentation.dart';
 
 import 'package:get_it/get_it.dart';
+import 'package:mailer/smtp_server.dart';
 import 'package:postgres/postgres.dart';
 import 'package:ruta/open_api.dart';
 
