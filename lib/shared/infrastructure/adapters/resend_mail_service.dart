@@ -6,14 +6,14 @@ import 'package:mustache_template/mustache.dart';
 
 class ResendMailService with MailTemplateLoaderMixin implements MailService {
   const ResendMailService({
-    required this.templatesFolderPath,
-    required this.domainTitle,
+    required this.assetsFolderPath,
+    required this.domainName,
     required this.client,
   });
 
   final ResendClient client;
-  final String domainTitle;
-  final String templatesFolderPath;
+  final String domainName;
+  final String assetsFolderPath;
 
   @override
   Future<void> send({
@@ -24,7 +24,7 @@ class ResendMailService with MailTemplateLoaderMixin implements MailService {
     String? from,
   }) async {
     final result = await client.email.sendEmail(
-      from: '${from ?? 'no-reply'}@$domainTitle',
+      from: '${from ?? 'no-reply'}@$domainName',
       to: to,
       subject: subject,
       text: text,
@@ -62,7 +62,7 @@ class ResendMailService with MailTemplateLoaderMixin implements MailService {
     try {
       final Template t = await loadTemplate(
         templateName: template.templateName,
-        templatesFolderPath: templatesFolderPath,
+        assetsFolderPath: assetsFolderPath,
       );
 
       final String html = t.renderString({...template.vars, 'subject': template.subject});

@@ -6,13 +6,13 @@ import 'package:mailer/smtp_server.dart';
 
 class SmtpMailService with MailTemplateLoaderMixin implements MailService {
   SmtpMailService({
-    required this.templatesFolderPath,
-    required this.domainTitle,
+    required this.assetsFolderPath,
+    required this.domainName,
     required this.server,
   });
 
-  final String templatesFolderPath;
-  final String domainTitle;
+  final String assetsFolderPath;
+  final String domainName;
   final SmtpServer server;
 
   @override
@@ -24,7 +24,7 @@ class SmtpMailService with MailTemplateLoaderMixin implements MailService {
     String? from,
   }) async {
     final message = mailer.Message()
-      ..from = mailer.Address('${from ?? 'no-reply'}@$domainTitle')
+      ..from = mailer.Address('${from ?? 'no-reply'}@$domainName')
       ..recipients.addAll(to)
       ..subject = subject
       ..text = text
@@ -58,7 +58,7 @@ class SmtpMailService with MailTemplateLoaderMixin implements MailService {
     try {
       final t = await loadTemplate(
         templateName: template.templateName,
-        templatesFolderPath: templatesFolderPath,
+        assetsFolderPath: assetsFolderPath,
       );
       final html = t.renderString({...template.vars, 'subject': template.subject});
       return await send(to: to, subject: template.subject, from: from, html: html);
