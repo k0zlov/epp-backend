@@ -1,10 +1,19 @@
 import 'package:epp_backend/shared/domain/base/failure.dart';
 import 'package:epp_backend/shared/infrastructure/base/presentation_error.dart';
+import 'package:epp_backend/shared/presentation/extensions/response_x.dart';
+import 'package:ruta/ruta.dart';
 
 typedef FailurePresentation = (int statusCode, String message);
 
 abstract class FailureMapper<T extends DomainFailure> {
   FailurePresentation map(T failure);
+
+  Response resolveToResponse(DomainFailureBase failure, Request request) {
+    final PresentationError error = resolve(failure);
+
+    final Response response = error.toResponse();
+    return response.withError(error);
+  }
 
   PresentationError resolve(DomainFailureBase failure) {
     if (failure is DomainFailureList) {

@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'package:bcrypt/bcrypt.dart';
 import 'package:crypto/crypto.dart';
 import 'package:epp_backend/shared/application/application.dart';
-import 'package:epp_backend/shared/application/base/infrastructure_error_code.dart';
 
 class BcryptHashService implements HashService {
   String _normalize(String value) {

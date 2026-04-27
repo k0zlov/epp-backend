@@ -39,7 +39,7 @@ class LogoutUseCase extends UseCase<void, LogoutParams> {
   Future<Result<void>> call(LogoutParams params) async {
     final sessionId = params.sessionId;
 
-    final Result<void> result = await unitOfWork.execute(errorMessage: 'Failed to logout session $sessionId', () async {
+    final Result<void> result = await unitOfWork.execute(() async {
       final User? user = await repository.getUserById(params.userId);
 
       if (user == null) {

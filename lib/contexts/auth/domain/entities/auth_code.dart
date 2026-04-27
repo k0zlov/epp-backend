@@ -56,7 +56,7 @@ class AuthCode extends Entity {
   void invalidate() {
     if (isInvalidated || isUsed) return;
 
-    invalidatedAt = DateTime.now();
+    invalidatedAt = DateTime.timestamp();
     updateTimestamp();
   }
 

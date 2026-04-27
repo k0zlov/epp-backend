@@ -1,8 +1,6 @@
 import 'package:epp_backend/contexts/auth/application/application.dart';
 import 'package:epp_backend/contexts/auth/application/queries/get_user_use_case.dart';
 import 'package:epp_backend/contexts/auth/presentation/errors/auth_failure_mapper.dart';
-import 'package:epp_backend/shared/domain/base/failure.dart';
-import 'package:epp_backend/shared/infrastructure/infrastructure.dart';
 import 'package:epp_backend/shared/presentation/presentation.dart';
 import 'package:ruta/ruta.dart';
 
@@ -29,15 +27,14 @@ class AuthController {
   final GetUserUseCase getUserUseCase;
   final AuthFailureMapper failureMapper;
 
-  Response _ifLeft(DomainFailureBase failure) {
-    return failureMapper.resolve(failure).toResponse();
-  }
-
   Future<Response> signUp(Request request) async {
     final params = SignUpParams.fromJson(request.data);
     final result = await signUpUseCase(params);
 
-    return result.fold(_ifLeft, (_) => Response());
+    return result.fold(
+      (failure) => failureMapper.resolveToResponse(failure, request),
+      (_) => Response(),
+    );
   }
 
   Future<Response> login(Request request) async {
@@ -50,7 +47,7 @@ class AuthController {
     final result = await loginUseCase(params);
 
     return result.fold(
-      _ifLeft,
+      (failure) => failureMapper.resolveToResponse(failure, request),
       (view) => Response.json(body: view.toJson()),
     );
   }
@@ -59,14 +56,20 @@ class AuthController {
     final params = ConfirmEmailParams.fromJson(request.data);
     final result = await confirmEmailUseCase(params);
 
-    return result.fold(_ifLeft, (_) => Response());
+    return result.fold(
+      (failure) => failureMapper.resolveToResponse(failure, request),
+      (_) => Response(),
+    );
   }
 
   Future<Response> sendAuthCode(Request request) async {
     final params = SendAuthCodeParams.fromJson(request.data);
     final result = await sendAuthCodeUseCase(params);
 
-    return result.fold(_ifLeft, (_) => Response());
+    return result.fold(
+      (failure) => failureMapper.resolveToResponse(failure, request),
+      (_) => Response(),
+    );
   }
 
   Future<Response> refreshSession(Request request) async {
@@ -79,31 +82,40 @@ class AuthController {
     final result = await refreshSessionUseCase(params);
 
     return result.fold(
-      _ifLeft,
+      (failure) => failureMapper.resolveToResponse(failure, request),
       (view) => Response.json(body: view.toJson()),
     );
   }
 
   Future<Response> logout(Request request) async {
-    final ClientInfo info = request.clientInfo;
+    final info = request.clientInfo;
 
     final params = LogoutParams(userId: info.userId!, sessionId: info.sessionId!);
     final result = await logoutUseCase(params);
 
-    return result.fold(_ifLeft, (_) => Response());
+    return result.fold(
+      (failure) => failureMapper.resolveToResponse(failure, request),
+      (_) => Response(),
+    );
   }
 
   Future<Response> confirmPasswordReset(Request request) async {
     final params = ConfirmPasswordResetParams.fromJson(request.data);
     final result = await confirmPasswordResetUseCase(params);
 
-    return result.fold(_ifLeft, (_) => Response());
+    return result.fold(
+      (failure) => failureMapper.resolveToResponse(failure, request),
+      (_) => Response(),
+    );
   }
 
   Future<Response> getUser(Request request) async {
     final params = GetUserParams(userId: request.clientInfo.userId!);
     final result = await getUserUseCase(params);
 
-    return result.fold(_ifLeft, (user) => Response.json(body: user));
+    return result.fold(
+      (failure) => failureMapper.resolveToResponse(failure, request),
+      (user) => Response.json(body: user),
+    );
   }
 }

@@ -49,7 +49,6 @@ class RefreshSessionUseCase extends UseCase<TokensView, RefreshSessionParams> {
     final String userId = payload.userId;
 
     final Result<TokensView> result = await unitOfWork.execute(
-      errorMessage: 'Failed to refresh session ($sessionId) of user ($userId)',
       () async {
         final User? user = await repository.getUserById(userId);
 

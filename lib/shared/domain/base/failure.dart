@@ -34,7 +34,7 @@ abstract class DomainFailureContext extends DomainFailureBase with DomainFailure
 }
 
 abstract class DomainFailure extends DomainFailureBase {
-  DomainFailure() : occurredAt = DateTime.now();
+  DomainFailure() : occurredAt = DateTime.timestamp();
 
   final DateTime occurredAt;
 }

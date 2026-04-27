@@ -41,7 +41,7 @@ class SharedTestBench<T> {
   @protected
   @mustCallSuper
   void setupDefaultBehaviors() {
-    when(() => unitOfWork.execute<Result<T>>(any(), errorMessage: any(named: 'errorMessage'))).thenAnswer((
+    when(() => unitOfWork.execute<Result<T>>(any())).thenAnswer((
       invocation,
     ) async {
       final action = invocation.positionalArguments[0] as Future<Result<T>> Function();

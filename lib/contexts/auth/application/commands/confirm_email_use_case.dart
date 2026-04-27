@@ -36,7 +36,7 @@ class ConfirmEmailUseCase extends UseCase<void, ConfirmEmailParams> {
 
   @override
   Future<Result<void>> call(ConfirmEmailParams params) {
-    return unitOfWork.execute(errorMessage: 'Failed to confirm email for: ${params.email.maskEmail()}', () async {
+    return unitOfWork.execute(() async {
       final User? user = await repository.getUserByEmail(params.email);
 
       if (user == null) {

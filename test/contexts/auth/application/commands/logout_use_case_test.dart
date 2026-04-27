@@ -39,8 +39,8 @@ void main() {
       tokenHash: 'hash',
       ipAddress: bench.tIpAddress,
       userAgent: bench.tUserAgent,
-      createdAt: DateTime.now(),
-      expiresAt: DateTime.now().add(const Duration(days: 1)),
+      createdAt: DateTime.timestamp(),
+      expiresAt: DateTime.timestamp().add(const Duration(days: 1)),
       updatedAt: null,
     );
 
@@ -49,7 +49,7 @@ void main() {
       email: Email(bench.tEmail),
       passwordHash: bench.tHash,
       isVerified: true,
-      createdAt: DateTime.now(),
+      createdAt: DateTime.timestamp(),
       displayName: bench.tDisplayName,
       deletedAt: null,
       updatedAt: null,

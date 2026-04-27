@@ -1,22 +1,28 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:epp_backend/shared/application/base/log_context.dart';
 import 'package:epp_backend/shared/application/ports/logger_service.dart';
+import 'package:epp_backend/shared/infrastructure/loggers/json_log_printer.dart';
 import 'package:epp_backend/shared/infrastructure/sanitizers/log_sanitizer.dart';
 import 'package:logger/logger.dart';
 
 class ConsoleLoggerService implements LoggerService {
   ConsoleLoggerService({
     bool silent = false,
+    bool isDevelopment = true,
     LogSanitizer? sanitizer,
   }) : _logger = Logger(
          level: silent ? Level.off : Level.all,
          filter: ProductionFilter(),
-         printer: PrettyPrinter(
-           errorMethodCount: 30,
-           printEmojis: false,
-           dateTimeFormat: DateTimeFormat.dateAndTime,
-         ),
+         printer: isDevelopment
+             ? PrettyPrinter(
+                 methodCount: 0,
+                 errorMethodCount: 30,
+                 printEmojis: false,
+                 dateTimeFormat: DateTimeFormat.dateAndTime,
+               )
+             : JsonLogPrinter(),
        ),
        _sanitizer = sanitizer ?? LogSanitizer();
 
@@ -39,9 +45,12 @@ class ConsoleLoggerService implements LoggerService {
   }
 
   String _buildMessage(String message, LogContext? context) {
+    final String? traceId = Zone.current[#traceId] as String?;
+
     final logMap = {
-      'timestamp': DateTime.now().toIso8601String(),
+      'timestamp': DateTime.timestamp().toIso8601String(),
       'event': context?.event ?? 'undefined_event',
+      'traceId': traceId ?? 'internal',
       'message': message,
       if (context?.payload != null) 'payload': _sanitizer.sanitize(context!.payload!),
     };

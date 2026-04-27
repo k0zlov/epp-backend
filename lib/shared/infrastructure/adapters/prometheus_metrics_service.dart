@@ -1,97 +1,107 @@
 import 'dart:async';
-import 'package:epp_backend/shared/application/base/metrics_definition.dart';
-import 'package:epp_backend/shared/application/ports/metrics_service.dart';
+import 'package:epp_backend/shared/application/application.dart';
 import 'package:prometheus_client/prometheus_client.dart';
 
 class PrometheusMetricsService implements MetricsService {
+  PrometheusMetricsService() {
+    _initialize();
+  }
+
   final CollectorRegistry _registry = CollectorRegistry();
+  final Map<MetricDefinition, Collector> _metrics = <MetricDefinition, Collector>{};
 
-  final Map<String, Collector> _metricsCache = {};
-
-  T _getOrRegister<T extends Collector>(MetricDefinition def, T Function() factory) {
-    if (_metricsCache.containsKey(def.name)) {
-      return _metricsCache[def.name]! as T;
+  void _initialize() {
+    for (final MetricDefinition def in MetricDefinition.values) {
+      final Collector collector = _createCollector(def);
+      _registry.register(collector);
+      _metrics[def] = collector;
     }
+  }
 
-    final collector = factory();
-    _registry.register(collector);
-    _metricsCache[def.name] = collector;
-
-    return collector;
+  Collector _createCollector(MetricDefinition def) {
+    return switch (def.type) {
+      MetricType.counter => Counter(
+        name: def.name,
+        help: def.help,
+        labelNames: def.labelNames,
+      ),
+      MetricType.gauge => Gauge(
+        name: def.name,
+        help: def.help,
+        labelNames: def.labelNames,
+      ),
+      MetricType.histogram => Histogram(
+        name: def.name,
+        help: def.help,
+        labelNames: def.labelNames,
+      ),
+      MetricType.summary => Summary(
+        name: def.name,
+        help: def.help,
+        labelNames: def.labelNames,
+      ),
+      _ => throw UnsupportedError('Metric type ${def.type} not supported'),
+    };
   }
 
   @override
   void increment(MetricDefinition metric, {Map<String, String>? labels}) {
-    final collector = _getOrRegister(
-      metric,
-      () => Counter(
-        name: metric.name,
-        help: metric.help,
-        labelNames: labels?.keys.toList() ?? [],
-      ),
-    );
+    final Counter counter = _metrics[metric]! as Counter;
 
-    if (labels != null) {
-      collector.labels(labels.values.toList()).inc();
+    if (metric.labelNames.isEmpty) {
+      counter.inc();
     } else {
-      collector.inc();
+      counter.labels(_extractLabelValues(metric, labels)).inc();
     }
   }
 
   @override
   void setGauge(MetricDefinition metric, int value, {Map<String, String>? labels}) {
-    final collector = _getOrRegister(
-      metric,
-      () => Gauge(
-        name: metric.name,
-        help: metric.help,
-        labelNames: labels?.keys.toList() ?? [],
-      ),
-    );
+    final Gauge gauge = _metrics[metric]! as Gauge;
 
-    if (labels != null) {
-      collector.labels(labels.values.toList()).value = value.toDouble();
+    if (metric.labelNames.isEmpty) {
+      gauge.value = value.toDouble();
     } else {
-      collector.value = value.toDouble();
+      gauge.labels(_extractLabelValues(metric, labels)).value = value.toDouble();
     }
   }
 
   @override
   void recordDuration(MetricDefinition metric, int ms, {Map<String, String>? labels}) {
-    final collector = _getOrRegister(
-      metric,
-      () => Histogram(
-        name: metric.name,
-        help: metric.help,
-        labelNames: labels?.keys.toList() ?? [],
-      ),
-    );
+    final Histogram histogram = _metrics[metric]! as Histogram;
+    final double seconds = ms / 1000.0;
 
-    final seconds = ms / 1000.0;
-    if (labels != null) {
-      collector.labels(labels.values.toList()).observe(seconds);
+    if (metric.labelNames.isEmpty) {
+      histogram.observe(seconds);
     } else {
-      collector.observe(seconds);
+      histogram.labels(_extractLabelValues(metric, labels)).observe(seconds);
     }
+  }
+
+  List<String> _extractLabelValues(MetricDefinition def, Map<String, String>? labels) {
+    return def.labelNames.map((name) => labels?[name] ?? 'unknown').toList();
   }
 
   @override
   Future<String> expose() async {
-    final buffer = StringBuffer();
-    final metrics = await _registry.collectMetricFamilySamples();
+    final StringBuffer buffer = StringBuffer();
+    final Iterable<MetricFamilySamples> families = await _registry.collectMetricFamilySamples();
 
-    for (final family in metrics) {
+    for (final MetricFamilySamples family in families) {
       buffer
         ..writeln('# HELP ${family.name} ${family.help}')
         ..writeln('# TYPE ${family.name} ${family.type.name.toLowerCase()}');
-      for (final sample in family.samples) {
-        final labelString = sample.labelNames.isEmpty
-            ? ''
-            : '{${List.generate(sample.labelNames.length, (i) => '${sample.labelNames[i]}="${sample.labelValues[i]}"').join(',')}}';
-        buffer.writeln('${sample.name}$labelString ${sample.value}');
+
+      for (final Sample sample in family.samples) {
+        final List<String> labelParts = <String>[];
+        for (int i = 0; i < sample.labelNames.length; i++) {
+          labelParts.add('${sample.labelNames[i]}="${sample.labelValues[i]}"');
+        }
+
+        final String labelsString = labelParts.isEmpty ? '' : '{${labelParts.join(',')}}';
+        buffer.writeln('${sample.name}$labelsString ${sample.value}');
       }
     }
-
     return buffer.toString();
   }
 }
