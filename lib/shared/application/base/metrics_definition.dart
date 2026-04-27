@@ -17,7 +17,7 @@ enum MetricDefinition {
     'http_errors_total',
     'Total number of failed request executions',
     MetricType.counter,
-    ['type', 'path'],
+    ['method', 'type', 'path', 'status'],
   ),
   infrastructureErrors(
     'infrastructure_errors_total',
