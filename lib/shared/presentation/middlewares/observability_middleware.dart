@@ -94,7 +94,7 @@ class ObservabilityMiddleware extends Middleware {
       metricsService.increment(
         MetricDefinition.httpErrors,
         labels: {
-          'path': path,
+          ...labels,
           'type': error?.code ?? 'unknown_error',
         },
       );
