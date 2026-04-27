@@ -23,7 +23,7 @@ class AuthTestBench<T> extends SharedTestBench<T> {
     email: Email(tEmail),
     passwordHash: tHash,
     isVerified: true,
-    createdAt: DateTime.now(),
+    createdAt: DateTime.timestamp(),
     displayName: tDisplayName,
     deletedAt: null,
     updatedAt: null,

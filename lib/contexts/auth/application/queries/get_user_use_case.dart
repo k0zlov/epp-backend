@@ -22,7 +22,7 @@ class GetUserUseCase extends UseCase<UserView, GetUserParams> {
 
   @override
   Future<Result<UserView>> call(GetUserParams params) {
-    return unitOfWork.execute(errorMessage: 'Could not get user data (${params.userId}).', () async {
+    return unitOfWork.execute(() async {
       final user = await repository.getUserById(params.userId);
 
       if (user == null) return Failure(UserNotFound());

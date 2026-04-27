@@ -10,11 +10,13 @@ class RequireAuthMiddleware extends Middleware {
       final clientInfo = request.clientInfo;
 
       if (!clientInfo.isAuthorized) {
-        return const PresentationError(
+        const error = PresentationError(
           statusCode: HttpStatus.unauthorized,
           code: 'Unauthorized',
           message: 'This action requires authentication.',
-        ).toResponse();
+        );
+
+        return error.toResponse().withError(error);
       }
 
       return handler(request);

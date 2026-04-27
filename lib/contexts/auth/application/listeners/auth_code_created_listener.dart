@@ -2,14 +2,11 @@ import 'dart:async';
 
 import 'package:epp_backend/contexts/auth/auth.dart';
 import 'package:epp_backend/shared/application/application.dart';
-import 'package:epp_backend/shared/application/base/metrics_definition.dart';
-import 'package:epp_backend/shared/application/ports/metrics_service.dart';
 
 class AuthCodeCreatedListener extends EventListener<AuthCodeCreatedEvent> {
-  AuthCodeCreatedListener({required this.metrics, required this.logger, required super.eventBus});
+  AuthCodeCreatedListener({required this.logger, required super.eventBus});
 
   final LoggerService logger;
-  final MetricsService metrics;
 
   @override
   FutureOr<void> handle(AuthCodeCreatedEvent event) {
@@ -24,11 +21,6 @@ class AuthCodeCreatedListener extends EventListener<AuthCodeCreatedEvent> {
           'codeId': event.code.id,
         },
       ),
-    );
-
-    metrics.increment(
-      MetricDefinition.authCodesCreated,
-      labels: {'type': event.code.type.name},
     );
 
     final integrationEvent = AuthCodeCreatedIntegrationEvent(

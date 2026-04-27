@@ -112,7 +112,7 @@ void main() {
         email: Email(email()),
         passwordHash: hash(),
         isVerified: false,
-        createdAt: DateTime.now(),
+        createdAt: DateTime.timestamp(),
         displayName: bench.tDisplayName,
         deletedAt: null,
         updatedAt: null,

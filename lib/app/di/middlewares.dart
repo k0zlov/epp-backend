@@ -4,5 +4,7 @@ Future<void> _middlewares() async {
   getIt
     ..registerLazySingleton<AuthMiddleware>(() => AuthMiddleware(tokenService: getIt()))
     ..registerLazySingleton<ErrorMiddleware>(() => ErrorMiddleware(loggerService: getIt(), metricsService: getIt()))
-    ..registerLazySingleton<MetricsMiddleware>(() => MetricsMiddleware(metricsService: getIt()));
+    ..registerLazySingleton<ObservabilityMiddleware>(
+      () => ObservabilityMiddleware(metricsService: getIt(), loggerService: getIt()),
+    );
 }

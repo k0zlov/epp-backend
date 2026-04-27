@@ -1,4 +1,4 @@
-import 'package:epp_backend/shared/application/ports/event_bus.dart';
+import 'package:epp_backend/shared/application/application.dart';
 import 'package:epp_backend/shared/domain/base/event.dart';
 
 class InMemoryEventBus implements EventBus {
@@ -10,12 +10,26 @@ class InMemoryEventBus implements EventBus {
 
   @override
   void publish<T extends Event>(T event) {
-    final String key = _normalize(event.runtimeType.toString());
-    final handlers = _handlersMap[key];
+    _dispatch(_normalize(event.runtimeType.toString()), event);
 
+    if (event is DomainEvent) {
+      _dispatch('DomainEvent', event);
+    }
+
+    if (event is IntegrationEvent) {
+      _dispatch('IntegrationEvent', event);
+    }
+
+    _dispatch('Event', event);
+  }
+
+  void _dispatch(String key, Event event) {
+    final handlers = _handlersMap[key];
     if (handlers == null) return;
+
     for (final handler in handlers) {
-      (handler as EventHandlerFunc<T>)(event);
+      // ignore: avoid_dynamic_calls
+      handler(event);
     }
   }
 

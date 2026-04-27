@@ -12,7 +12,7 @@ class AuthFailureMapper extends FailureMapper<AuthFailure> {
       InvalidPassword() => (HttpStatus.badRequest, 'The password does not meet security requirements.'),
       InvalidCredentials() => (HttpStatus.unauthorized, 'Invalid email or password.'),
       UserNotVerified() => (HttpStatus.forbidden, 'Please verify your email address to continue.'),
-      UserNotFound() => (HttpStatus.notFound, 'User with this email was not found.'),
+      UserNotFound() => (HttpStatus.notFound, 'User was not found.'),
       AuthCodeNotFound() => (HttpStatus.notFound, 'Verification code not found or already processed.'),
       AuthCodeInvalid() => (HttpStatus.badRequest, 'The provided verification code is invalid.'),
       AuthCodeAlreadyUsed() => (HttpStatus.gone, 'This verification code has already been used.'),

@@ -5,10 +5,7 @@ import 'package:epp_backend/app/extensions/dot_env.dart';
 import 'package:epp_backend/contexts/auth/application/queries/get_user_use_case.dart';
 import 'package:epp_backend/contexts/auth/auth.dart';
 import 'package:epp_backend/shared/application/application.dart';
-import 'package:epp_backend/shared/application/ports/metrics_service.dart';
-import 'package:epp_backend/shared/infrastructure/adapters/prometheus_metrics_service.dart';
 import 'package:epp_backend/shared/infrastructure/infrastructure.dart';
-import 'package:epp_backend/shared/presentation/middlewares/metrics_middleware.dart';
 import 'package:epp_backend/shared/presentation/presentation.dart';
 
 import 'package:get_it/get_it.dart';

@@ -3,7 +3,6 @@ import 'package:epp_backend/contexts/auth/domain/domain.dart';
 import 'package:epp_backend/shared/application/application.dart';
 import 'package:epp_backend/shared/domain/domain.dart';
 import 'package:epp_backend/shared/infrastructure/extensions/either_x.dart';
-import 'package:epp_backend/shared/infrastructure/extensions/string_x.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'sign_up_use_case.g.dart';
@@ -39,7 +38,6 @@ class SignUpUseCase extends UseCase<void, SignUpParams> {
   @override
   Future<Result<void>> call(SignUpParams params) {
     return unitOfWork.execute(
-      errorMessage: 'Failed to complete sign up process for email: ${params.email.maskEmail()}',
       () async {
         final List<DomainFailureBase> failures = [];
 

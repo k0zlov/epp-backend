@@ -5,7 +5,6 @@ import 'package:epp_backend/contexts/auth/domain/domain.dart';
 import 'package:epp_backend/shared/application/application.dart';
 import 'package:epp_backend/shared/domain/base/result.dart';
 import 'package:epp_backend/shared/infrastructure/extensions/either_x.dart';
-import 'package:epp_backend/shared/infrastructure/extensions/string_x.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'send_auth_code_use_case.freezed.dart';
@@ -42,7 +41,6 @@ class SendAuthCodeUseCase extends UseCase<void, SendAuthCodeParams> {
   @override
   Future<Result<void>> call(SendAuthCodeParams params) {
     return unitOfWork.execute(
-      errorMessage: 'Failed to send verification code to: ${params.email.maskEmail()}',
       () async {
         final User? user = await repository.getUserByEmail(params.email);
 

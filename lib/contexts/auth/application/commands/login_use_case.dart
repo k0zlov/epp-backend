@@ -3,7 +3,6 @@ import 'package:epp_backend/contexts/auth/application/view/tokens_view.dart';
 import 'package:epp_backend/contexts/auth/domain/domain.dart';
 import 'package:epp_backend/shared/application/application.dart';
 import 'package:epp_backend/shared/domain/base/result.dart';
-import 'package:epp_backend/shared/infrastructure/infrastructure.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:uuid/v4.dart';
 
@@ -42,7 +41,7 @@ class LoginUseCase extends UseCase<TokensView, LoginParams> {
 
   @override
   Future<Result<TokensView>> call(LoginParams params) {
-    return unitOfWork.execute(errorMessage: 'Failed to login for email: ${params.email.maskEmail()}', () async {
+    return unitOfWork.execute(() async {
       final User? user = await repository.getUserByEmail(params.email);
 
       if (user == null) {

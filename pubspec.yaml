@@ -18,7 +18,7 @@ dependencies:
   dart_jsonwebtoken: ^3.1.1
   collection: ^1.19.1
   logger: ^2.5.0
-  ruta: 0.1.21
+  ruta: 0.1.22
   mailer: ^6.4.1
   image: ^4.5.4
   mime: ^1.0.6

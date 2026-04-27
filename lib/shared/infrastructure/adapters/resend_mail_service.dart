@@ -1,11 +1,12 @@
 import 'package:dart_resend/dart_resend.dart';
 import 'package:epp_backend/shared/application/application.dart';
-import 'package:epp_backend/shared/application/base/infrastructure_error_code.dart';
 import 'package:epp_backend/shared/infrastructure/mixins/mail_template_loader_mixin.dart';
 import 'package:mustache_template/mustache.dart';
 
 class ResendMailService with MailTemplateLoaderMixin implements MailService {
   const ResendMailService({
+    required this.metricsService,
+    required this.loggerService,
     required this.assetsFolderPath,
     required this.domainName,
     required this.client,
@@ -15,6 +16,9 @@ class ResendMailService with MailTemplateLoaderMixin implements MailService {
   final String domainName;
   final String assetsFolderPath;
 
+  final LoggerService loggerService;
+  final MetricsService metricsService;
+
   @override
   Future<void> send({
     required List<String> to,
@@ -22,6 +26,7 @@ class ResendMailService with MailTemplateLoaderMixin implements MailService {
     String? text,
     String? html,
     String? from,
+    String templateName = 'raw',
   }) async {
     final result = await client.email.sendEmail(
       from: '${from ?? 'no-reply'}@$domainName',
@@ -32,7 +37,24 @@ class ResendMailService with MailTemplateLoaderMixin implements MailService {
     );
 
     await result.fold(
-      onSuccess: (_) {},
+      onSuccess: (data) {
+        metricsService.increment(
+          MetricDefinition.mailSent,
+          labels: {'template': templateName},
+        );
+
+        loggerService.info(
+          'Email sent successfully',
+          context: LogContext(
+            event: 'infra.mail_sent',
+            payload: {
+              'to': to,
+              'subject': subject,
+              'template': templateName,
+            },
+          ),
+        );
+      },
       onFailure: (error, message) {
         InfrastructureErrorCode code = InfrastructureErrorCode.mailProviderFailure;
 

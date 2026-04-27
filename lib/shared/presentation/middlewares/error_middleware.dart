@@ -1,17 +1,14 @@
+import 'dart:async';
 import 'dart:io';
-import 'package:epp_backend/shared/application/base/infrastructure_exception.dart';
-import 'package:epp_backend/shared/application/base/log_context.dart';
-import 'package:epp_backend/shared/application/base/metrics_definition.dart';
-import 'package:epp_backend/shared/application/ports/logger_service.dart';
-import 'package:epp_backend/shared/application/ports/metrics_service.dart';
+import 'package:epp_backend/shared/application/application.dart';
 import 'package:epp_backend/shared/infrastructure/base/presentation_error.dart';
-import 'package:epp_backend/shared/presentation/extensions/request_x.dart';
+import 'package:epp_backend/shared/presentation/presentation.dart';
 import 'package:ruta/ruta.dart';
 
 class ErrorMiddleware extends Middleware {
   ErrorMiddleware({
-    required this.metricsService,
     required this.loggerService,
+    required this.metricsService,
   });
 
   final LoggerService loggerService;
@@ -21,6 +18,8 @@ class ErrorMiddleware extends Middleware {
   Handler call(Handler handler) {
     return (Request request) async {
       if (request.isSocketConnection) return handler(request);
+
+      final String? traceId = Zone.current[#traceId] as String?;
 
       try {
         return await handler(request);
@@ -36,27 +35,30 @@ class ErrorMiddleware extends Middleware {
               'method': request.method.value,
               'errorCode': e.code.value,
               'errorMessage': e.message,
+              ...e.details,
             },
           ),
         );
 
         metricsService.increment(
-          MetricDefinition.httpErrors,
+          MetricDefinition.infrastructureErrors,
           labels: {
-            'type': 'infrastructure_error',
-            'errorCode': e.code.value,
-            'path': request.url.path,
+            'service': e.code.service,
+            'error_code': e.code.value,
           },
         );
 
-        return Response.json(
+        final error = PresentationError(
           statusCode: HttpStatus.internalServerError,
-          body: const PresentationError(
-            statusCode: HttpStatus.internalServerError,
-            code: 'InternalServerError',
-            message: 'Something went wrong on our side.',
-          ).toJson(),
+          code: 'InternalServerError',
+          message: 'Something went wrong on our side.',
+          details: {'traceId': traceId, 'infrastructure_code': e.code.value},
         );
+
+        return Response.json(
+          statusCode: error.statusCode,
+          body: error.toJson(),
+        ).withError(error);
       } catch (e, st) {
         loggerService.error(
           'Unexpected error: $e',
@@ -72,21 +74,24 @@ class ErrorMiddleware extends Middleware {
         );
 
         metricsService.increment(
-          MetricDefinition.httpErrors,
+          MetricDefinition.infrastructureErrors,
           labels: {
-            'type': 'unexpected_error',
-            'path': request.url.path,
+            'service': InfrastructureErrorCode.unexpectedError.service,
+            'error_code': InfrastructureErrorCode.unexpectedError.value,
           },
         );
 
-        return Response.json(
+        final error = PresentationError(
           statusCode: HttpStatus.internalServerError,
-          body: const PresentationError(
-            statusCode: HttpStatus.internalServerError,
-            code: 'UnexpectedError',
-            message: 'An unexpected error occurred.',
-          ).toJson(),
+          code: 'UnexpectedError',
+          message: 'An unexpected error occurred.',
+          details: {'traceId': traceId},
         );
+
+        return Response.json(
+          statusCode: error.statusCode,
+          body: error.toJson(),
+        ).withError(error);
       }
     };
   }

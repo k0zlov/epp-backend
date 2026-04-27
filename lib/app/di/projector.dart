@@ -13,6 +13,6 @@ Future<void> _projector() async {
       PasswordResetFailedProjector(db: getIt()),
       UserPasswordResetProjector(db: getIt()),
       UserLoggedOutProjector(db: getIt()),
-    ]),
+    ], getIt()),
   );
 }

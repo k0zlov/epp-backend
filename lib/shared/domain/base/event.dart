@@ -3,12 +3,14 @@ import 'package:uuid/v4.dart';
 
 @immutable
 abstract class Event {
-  Event() : occurredAt = DateTime.now(), eventId = const UuidV4().generate();
+  Event() : occurredAt = DateTime.timestamp(), eventId = const UuidV4().generate();
 
   final String eventId;
   final DateTime occurredAt;
 
   String get eventName;
+
+  Map<String, dynamic> toDetails() => {};
 
   @protected
   String formatEventName(String suffixToRemove) {
@@ -39,5 +41,5 @@ abstract class Event {
 
 abstract class DomainEvent extends Event {
   @override
-  String get eventName => formatEventName('DomainEvent');
+  String get eventName => formatEventName('Event');
 }

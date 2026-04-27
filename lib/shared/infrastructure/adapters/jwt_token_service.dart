@@ -1,6 +1,5 @@
 import 'package:dart_jsonwebtoken/dart_jsonwebtoken.dart';
 import 'package:epp_backend/shared/application/application.dart';
-import 'package:epp_backend/shared/application/base/infrastructure_error_code.dart';
 
 class JwtTokenService implements TokenService {
   const JwtTokenService({

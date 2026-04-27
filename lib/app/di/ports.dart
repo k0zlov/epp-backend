@@ -2,7 +2,7 @@ part of 'register_dependencies.dart';
 
 Future<void> _ports() async {
   getIt
-    ..registerLazySingleton<LoggerService>(ConsoleLoggerService.new)
+    ..registerLazySingleton<LoggerService>(() => ConsoleLoggerService(isDevelopment: env.isDev))
     ..registerLazySingleton<MetricsService>(PrometheusMetricsService.new)
     ..registerLazySingleton<TokenService>(
       () => JwtTokenService(refreshKey: env(DotEnvKey.refreshTokenSecret), accessKey: env(DotEnvKey.accessTokenSecret)),
@@ -19,10 +19,14 @@ Future<void> _ports() async {
               assetsFolderPath: assetsFolderPath,
               domainName: domainName,
               client: ResendClient(apiKey: env(DotEnvKey.resendApiKey)),
+              metricsService: getIt(),
+              loggerService: getIt(),
             )
           : SmtpMailService(
               assetsFolderPath: assetsFolderPath,
               domainName: domainName,
+              metricsService: getIt(),
+              loggerService: getIt(),
               server: SmtpServer(
                 env(DotEnvKey.smtpHost),
                 port: int.parse(env(DotEnvKey.smtpPort)),
